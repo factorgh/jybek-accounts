@@ -1,0 +1,306 @@
+// IFRS and QuickBooks Compliance Types
+
+export interface IFRSFinancialStatements {
+  statementOfProfitOrLoss: IFRSProfitLoss;
+  statementOfFinancialPosition: IFRSBalanceSheet;
+  statementOfCashFlows: IFRSCashFlow;
+  statementOfChangesInEquity: IFRSEquity;
+  notesToFinancialStatements: IFRSNotes[];
+}
+
+export interface IFRSProfitLoss {
+  revenue: RevenueLine[];
+  costOfSales: CostOfSalesLine[];
+  grossProfit: number;
+  otherIncome: OtherIncomeLine[];
+  operatingExpenses: OperatingExpense[];
+  profitBeforeTax: number;
+  taxExpense: TaxExpenseLine[];
+  profitAfterTax: number;
+  otherComprehensiveIncome: OtherComprehensiveIncome[];
+  totalComprehensiveIncome: number;
+  earningsPerShare: EarningsPerShare;
+}
+
+export interface IFRSBalanceSheet {
+  assets: AssetSection[];
+  liabilities: LiabilitySection[];
+  equity: EquitySection[];
+  totalAssets: number;
+  totalLiabilitiesAndEquity: number;
+}
+
+export interface IFRSCashFlow {
+  operatingActivities: CashFlowItem[];
+  investingActivities: CashFlowItem[];
+  financingActivities: CashFlowItem[];
+  netIncreaseInCash: number;
+  cashAtBeginningOfPeriod: number;
+  cashAtEndOfPeriod: number;
+}
+
+export interface IFRSEquity {
+  shareCapital: ShareCapital;
+  sharePremium: SharePremium;
+  retainedEarnings: RetainedEarnings;
+  otherReserves: OtherReserve[];
+  totalEquity: number;
+}
+
+export interface IFRSNotes {
+  accountingPolicies: AccountingPolicies[];
+  segmentInformation: SegmentInformation[];
+  relatedPartyTransactions: RelatedPartyTransaction[];
+  contingencies: Contingency[];
+  subsequentEvents: SubsequentEvent[];
+  fairValueMeasurements: FairValueMeasurement[];
+}
+
+// QuickBooks Feature Set
+export interface QuickBooksFeatures {
+  // Core Accounting
+  doubleEntryBookkeeping: boolean;
+  chartOfAccounts: ChartOfAccounts;
+  journalEntries: JournalEntry[];
+  transactionManagement: TransactionManagement;
+
+  // Customer & Vendor Management
+  customerManagement: CustomerManagement;
+  vendorManagement: VendorManagement;
+  contactManagement: ContactManagement;
+
+  // Invoicing & Payments
+  invoicing: InvoicingSystem;
+  paymentProcessing: PaymentProcessing;
+  expenseTracking: ExpenseTracking;
+
+  // Banking
+  bankReconciliation: BankReconciliation;
+  bankFeeds: BankFeedIntegration;
+
+  // Reporting
+  financialReports: FinancialReports;
+  customReports: CustomReport[];
+  budgeting: BudgetingSystem;
+  forecasting: ForecastingSystem;
+
+  // Advanced Features
+  payroll: PayrollSystem;
+  inventory: InventoryManagement;
+  fixedAssets: FixedAssetManagement;
+  multiCurrency: MultiCurrencySystem;
+  projectAccounting: ProjectAccounting;
+
+  // Compliance
+  taxManagement: TaxManagement;
+  auditTrail: AuditTrail;
+  dataImportExport: DataImportExport;
+}
+
+export interface QuickBooksReport {
+  profitAndLoss: ProfitAndLossReport;
+  balanceSheet: BalanceSheetReport;
+  cashFlowStatement: CashFlowReport;
+  generalLedger: GeneralLedgerReport;
+  trialBalance: TrialBalanceReport;
+  agedReceivables: AgedReceivablesReport;
+  agedPayables: AgedPayablesReport;
+  budgetVariance: BudgetVarianceReport;
+  customReport: CustomReportDefinition;
+}
+
+// Compliance Requirements
+export interface ComplianceRequirements {
+  ifrsCompliance: IFRSCompliance;
+  quickBooksCompatibility: QuickBooksCompatibility;
+  auditRequirements: AuditRequirements;
+  taxCompliance: TaxCompliance;
+  dataSecurity: DataSecurityRequirements;
+}
+
+export interface IFRSCompliance {
+  revenueRecognition: IFRS15Compliance;
+  leaseAccounting: IFRS16Compliance;
+  financialInstruments: IFRS9Compliance;
+  impairmentTesting: ImpairmentTesting;
+  fairValueMeasurement: FairValueMeasurement;
+  segmentReporting: SegmentReporting;
+  relatedPartyDisclosures: RelatedPartyDisclosures;
+}
+
+export interface QuickBooksCompatibility {
+  dataImport: QuickBooksDataImport;
+  dataExport: QuickBooksDataExport;
+  apiCompatibility: QuickBooksAPICompatibility;
+  reportFormats: QuickBooksReportFormats;
+  featureParity: FeatureParityMatrix;
+}
+
+// Enhanced Account Types for IFRS
+export enum IFRSAccountClassification {
+  // Assets
+  CurrentAssets = "current_assets",
+  NonCurrentAssets = "non_current_assets",
+  BiologicalAssets = "biological_assets",
+  IntangibleAssets = "intangible_assets",
+
+  // Liabilities
+  CurrentLiabilities = "current_liabilities",
+  NonCurrentLiabilities = "non_current_liabilities",
+  Provisions = "provisions",
+
+  // Equity
+  ShareCapital = "share_capital",
+  SharePremium = "share_premium",
+  RetainedEarnings = "retained_earnings",
+  OtherReserves = "other_reserves",
+
+  // Income & Expenses
+  Revenue = "revenue",
+  OtherIncome = "other_income",
+  CostOfSales = "cost_of_sales",
+  OperatingExpenses = "operating_expenses",
+  FinanceCosts = "finance_costs",
+  TaxExpense = "tax_expense",
+}
+
+// Tax Management
+export interface TaxManagement {
+  salesTax: SalesTaxConfiguration;
+  incomeTax: IncomeTaxConfiguration;
+  vatConfiguration: VATConfiguration;
+  taxReporting: TaxReporting;
+  taxPayments: TaxPayment[];
+  taxJurisdictions: TaxJurisdiction[];
+}
+
+export interface SalesTaxConfiguration {
+  taxRates: TaxRate[];
+  taxCodes: TaxCode[];
+  taxExemptions: TaxExemption[];
+  taxReporting: SalesTaxReporting;
+}
+
+export interface TaxReporting {
+  taxReturns: TaxReturn[];
+  taxLiabilities: TaxLiability[];
+  taxPayments: TaxPayment[];
+  taxCertificates: TaxCertificate[];
+}
+
+// Fixed Assets
+export interface FixedAssetManagement {
+  assetRegister: FixedAsset[];
+  depreciationMethods: DepreciationMethod[];
+  depreciationSchedules: DepreciationSchedule[];
+  impairmentTesting: ImpairmentTest[];
+  revaluationModel: RevaluationModel;
+  disposalRecords: AssetDisposal[];
+}
+
+export interface FixedAsset {
+  id: string;
+  businessId: string;
+  assetNumber: string;
+  description: string;
+  assetType: AssetType;
+  acquisitionDate: Date;
+  acquisitionCost: number;
+  depreciationMethod: DepreciationMethod;
+  usefulLife: number;
+  residualValue: number;
+  currentCarryingAmount: number;
+  accumulatedDepreciation: number;
+  impairmentLoss: number;
+  revaluationSurplus: number;
+  location: string;
+  responsiblePerson: string;
+  status: AssetStatus;
+  ifrsClassification: IFRSAccountClassification;
+}
+
+// Multi-Currency
+export interface MultiCurrencySystem {
+  baseCurrency: Currency;
+  foreignCurrencies: Currency[];
+  exchangeRates: ExchangeRateTable;
+  currencyTranslation: CurrencyTranslation;
+  foreignExchangeGains: ExchangeGain[];
+  foreignExchangeLosses: ExchangeLoss[];
+}
+
+export interface ExchangeRateTable {
+  rates: ExchangeRate[];
+  rateType: RateType;
+  effectiveDate: Date;
+  source: RateSource;
+}
+
+// Budgeting and Forecasting
+export interface BudgetingSystem {
+  annualBudgets: Budget[];
+  rollingForecasts: Forecast[];
+  budgetCategories: BudgetCategory[];
+  varianceAnalysis: VarianceReport[];
+  budgetApproval: BudgetApproval;
+}
+
+export interface Budget {
+  id: string;
+  businessId: string;
+  budgetPeriod: BudgetPeriod;
+  budgetType: BudgetType;
+  startDate: Date;
+  endDate: date;
+  budgetLines: BudgetLine[];
+  totalBudget: number;
+  actualAmount: number;
+  variance: number;
+  variancePercentage: number;
+  status: BudgetStatus;
+  approvedBy?: string;
+  approvedDate?: Date;
+}
+
+// Enhanced Transaction Types for Compliance
+export interface ComplianceTransaction extends Transaction {
+  taxTreatment: TaxTreatment;
+  ifrsDisclosure: IFRSDisclosure;
+  auditTrail: AuditEntry[];
+  supportingDocuments: SupportingDocument[];
+  relatedPartyDisclosure?: RelatedPartyDisclosure;
+}
+
+export interface AuditEntry {
+  id: string;
+  transactionId: string;
+  action: AuditAction;
+  userId: string;
+  timestamp: Date;
+  oldValue?: any;
+  newValue?: any;
+  ipAddress: string;
+  userAgent: string;
+  reason: string;
+  approvedBy?: string;
+  approvedAt?: Date;
+}
+
+// Data Import/Export for QuickBooks Compatibility
+export interface QuickBooksDataImport {
+  importType: ImportType;
+  fileFormat: FileFormat;
+  mappingRules: MappingRule[];
+  validationRules: ValidationRule[];
+  importResults: ImportResult[];
+  errorLog: ImportError[];
+}
+
+export interface QuickBooksDataExport {
+  exportFormat: ExportFormat;
+  dateRange: DateRange;
+  includeAttachments: boolean;
+  compressionEnabled: boolean;
+  encryptionEnabled: boolean;
+  exportResults: ExportResult;
+}

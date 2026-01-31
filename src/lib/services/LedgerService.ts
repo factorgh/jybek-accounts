@@ -319,7 +319,7 @@ export class LedgerService {
     );
     await clientSession.withTransaction(async () => {
       await db.collection("transactions").updateOne(
-        { _id: transactionId },
+        { _id: transactionId } as any,
         {
           $set: {
             isReversed: true,
@@ -389,7 +389,7 @@ export class LedgerService {
       }
 
       await db.collection("accounts").updateOne(
-        { _id: line.accountId },
+        { _id: line.accountId } as any,
         {
           $inc: { balance: balanceChange },
           $set: { updatedAt: new Date() },

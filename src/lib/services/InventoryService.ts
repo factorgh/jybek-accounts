@@ -29,6 +29,7 @@ export class InventoryService {
 
     try {
       const clientSession = await session;
+      let itemId: string = "";
 
       const result = await clientSession.withTransaction(async () => {
         // Create inventory item
@@ -41,7 +42,7 @@ export class InventoryService {
         const itemResult = await db
           .collection("inventory_items")
           .insertOne(item);
-        const itemId = itemResult.insertedId.toString();
+        itemId = itemResult.insertedId.toString();
 
         // Create initial stock level
         const stockLevel = {
@@ -57,7 +58,7 @@ export class InventoryService {
         return itemId;
       });
 
-      return await this.getInventoryItem(businessId, result);
+      return await this.getInventoryItem(businessId, itemId);
     } finally {
       const clientSession = await session;
       await clientSession.endSession();
@@ -150,6 +151,7 @@ export class InventoryService {
 
     try {
       const clientSession = await session;
+      let movementId: string = "";
 
       const result = await clientSession.withTransaction(async () => {
         // Get current item details
@@ -184,7 +186,7 @@ export class InventoryService {
         const movementResult = await db
           .collection("inventory_movements")
           .insertOne(movement);
-        const movementId = movementResult.insertedId.toString();
+        movementId = movementResult.insertedId.toString();
 
         // Update stock levels
         const stockLevel = await db.collection("stock_levels").findOne({
@@ -229,7 +231,7 @@ export class InventoryService {
         return movementId;
       });
 
-      return await this.getInventoryMovement(result);
+      return await this.getInventoryMovement(movementId);
     } finally {
       const clientSession = await session;
       await clientSession.endSession();
@@ -262,7 +264,6 @@ export class InventoryService {
       referenceType: movement.referenceType,
       referenceId: movement.referenceId,
       movementDate: movement.movementDate,
-      warehouseLocation: movement.warehouseLocation,
       notes: movement.notes,
       createdAt: movement.createdAt,
     };
@@ -549,7 +550,6 @@ export class InventoryService {
       safetyStock: rule.safetyStock,
       isActive: rule.isActive,
       createdAt: rule.createdAt,
-      updatedAt: rule.updatedAt,
     };
   }
 

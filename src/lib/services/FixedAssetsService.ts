@@ -311,6 +311,7 @@ export class FixedAssetsService {
 
     try {
       const clientSession = await session;
+      let disposalId: string = "";
 
       const result = await clientSession.withTransaction(async () => {
         // Get asset details
@@ -365,10 +366,11 @@ export class FixedAssetsService {
           },
         );
 
-        return disposalResult.insertedId.toString();
+        disposalId = disposalResult.insertedId.toString();
+        return disposalId;
       });
 
-      return await this.getAssetDisposal(result);
+      return await this.getAssetDisposal(disposalId);
     } finally {
       const clientSession = await session;
       await clientSession.endSession();
@@ -402,7 +404,6 @@ export class FixedAssetsService {
       usefulLifeYears: category.usefulLifeYears,
       ifrsClassification: category.ifrsClassification,
       createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
     };
   }
 
@@ -582,8 +583,6 @@ export class FixedAssetsService {
       proceedsAmount: disposal.proceedsAmount,
       disposalCosts: disposal.disposalCosts,
       gainLossOnDisposal: disposal.gainLossOnDisposal,
-      buyerName: disposal.buyerName,
-      disposalReference: disposal.disposalReference,
       disposedBy: disposal.disposedBy,
       createdAt: disposal.createdAt,
     };
@@ -682,8 +681,6 @@ export class FixedAssetsService {
       previousCarryingAmount: revaluation.previousCarryingAmount,
       revaluedAmount: revaluation.revaluedAmount,
       revaluationSurplus: revaluation.revaluationSurplus,
-      valuationMethod: revaluation.valuationMethod,
-      valuerName: revaluation.valuerName,
       performedBy: revaluation.performedBy,
       createdAt: revaluation.createdAt,
     };
