@@ -25,7 +25,7 @@ export class BusinessService {
     const db = await this.getDb();
     return await db
       .collection<Business>("businesses")
-      .findOne({ _id: new ObjectId(id) });
+      .findOne({ _id: new ObjectId(id) } as any);
   }
 
   static async updateBusiness(
@@ -39,21 +39,21 @@ export class BusinessService {
     };
 
     const result = await db
-      .collection("businesses")
+      .collection<Business>("businesses")
       .findOneAndUpdate(
-        { _id: new ObjectId(id) },
+        { _id: new ObjectId(id) } as any,
         { $set: update },
         { returnDocument: "after" },
       );
 
-    return result;
+    return result.value || null;
   }
 
   static async deleteBusiness(id: string): Promise<boolean> {
     const db = await this.getDb();
     const result = await db
       .collection("businesses")
-      .deleteOne({ _id: new ObjectId(id) });
+      .deleteOne({ _id: new ObjectId(id) } as any);
     return result.deletedCount > 0;
   }
 }

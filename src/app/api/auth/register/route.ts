@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       email,
       name,
       businessId: business._id!,
-      role: "admin",
+      role: "admin" as const,
       password: hashedPassword,
       createdAt: new Date(),
       updatedAt: new Date(),

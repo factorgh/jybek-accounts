@@ -247,11 +247,22 @@ export async function seedDatabase() {
       (acc) => acc.code === "4000",
     );
 
+    if (
+      !cashAccount ||
+      !equityAccount ||
+      !rentExpenseAccount ||
+      !salesRevenueAccount
+    ) {
+      throw new Error(
+        "Required accounts not found for seeding transaction lines",
+      );
+    }
+
     const transactionLines = [
       // TRX001 - Initial investment
       {
         transactionId: transactionResults.insertedIds["0"],
-        accountId: cashAccount._id, // Cash
+        accountId: cashAccount._id!, // Cash
         debitAmount: 50000,
         creditAmount: 0,
         description: "Initial cash investment",
@@ -259,7 +270,7 @@ export async function seedDatabase() {
       },
       {
         transactionId: transactionResults.insertedIds["0"],
-        accountId: equityAccount._id, // Owner's Equity
+        accountId: equityAccount._id!, // Owner's Equity
         debitAmount: 0,
         creditAmount: 50000,
         description: "Initial cash investment",
@@ -268,7 +279,7 @@ export async function seedDatabase() {
       // TRX002 - Office rent
       {
         transactionId: transactionResults.insertedIds["1"],
-        accountId: rentExpenseAccount._id, // Office Rent Expense
+        accountId: rentExpenseAccount._id!, // Office Rent Expense
         debitAmount: 1000,
         creditAmount: 0,
         description: "Office rent payment",
@@ -276,7 +287,7 @@ export async function seedDatabase() {
       },
       {
         transactionId: transactionResults.insertedIds["1"],
-        accountId: cashAccount._id, // Cash
+        accountId: cashAccount._id!, // Cash
         debitAmount: 0,
         creditAmount: 1000,
         description: "Office rent payment",
@@ -285,7 +296,7 @@ export async function seedDatabase() {
       // TRX003 - Client payment
       {
         transactionId: transactionResults.insertedIds["2"],
-        accountId: cashAccount._id, // Cash
+        accountId: cashAccount._id!, // Cash
         debitAmount: 5000,
         creditAmount: 0,
         description: "Client payment - ABC Corp",
@@ -293,7 +304,7 @@ export async function seedDatabase() {
       },
       {
         transactionId: transactionResults.insertedIds["2"],
-        accountId: salesRevenueAccount._id, // Sales Revenue
+        accountId: salesRevenueAccount._id!, // Sales Revenue
         debitAmount: 0,
         creditAmount: 5000,
         description: "Client payment - ABC Corp",

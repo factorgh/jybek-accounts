@@ -32,6 +32,7 @@ export class BudgetingService {
 
     try {
       const clientSession = await session;
+      let budgetId: string = "";
 
       const result = await clientSession.withTransaction(async () => {
         // Create budget
@@ -42,7 +43,7 @@ export class BudgetingService {
         };
 
         const budgetResult = await db.collection("budgets").insertOne(budget);
-        const budgetId = budgetResult.insertedId.toString();
+        budgetId = budgetResult.insertedId.toString();
 
         // Create budget lines
         if (budgetData.lines && budgetData.lines.length > 0) {
@@ -60,7 +61,7 @@ export class BudgetingService {
       });
 
       // Return the created budget with lines
-      return await this.getBudget(businessId, result);
+      return await this.getBudget(businessId, budgetId);
     } finally {
       const clientSession = await session;
       await clientSession.endSession();
@@ -102,7 +103,6 @@ export class BudgetingService {
       status: budget.status,
       approvedBy: budget.approvedBy,
       approvedAt: budget.approvedAt,
-      notes: budget.notes,
       createdAt: budget.createdAt,
       updatedAt: budget.updatedAt,
       lines: lines.map((line) => ({
@@ -150,7 +150,6 @@ export class BudgetingService {
         status: budget.status,
         approvedBy: budget.approvedBy,
         approvedAt: budget.approvedAt,
-        notes: budget.notes,
         createdAt: budget.createdAt,
         updatedAt: budget.updatedAt,
         lines: lines.map((line) => ({
@@ -321,6 +320,7 @@ export class BudgetingService {
 
     try {
       const clientSession = await session;
+      let forecastId: string = "";
 
       const result = await clientSession.withTransaction(async () => {
         // Create forecast
@@ -332,7 +332,7 @@ export class BudgetingService {
         const forecastResult = await db
           .collection("forecasts")
           .insertOne(forecast);
-        const forecastId = forecastResult.insertedId.toString();
+        forecastId = forecastResult.insertedId.toString();
 
         // Create forecast lines
         if (forecastData.lines && forecastData.lines.length > 0) {
@@ -349,7 +349,7 @@ export class BudgetingService {
       });
 
       // Return the created forecast with lines
-      return await this.getForecast(businessId, result);
+      return await this.getForecast(businessId, forecastId);
     } finally {
       const clientSession = await session;
       await clientSession.endSession();
@@ -387,9 +387,7 @@ export class BudgetingService {
       forecastName: forecast.forecastName,
       forecastPeriod: forecast.forecastPeriod,
       assumptions: forecast.assumptions,
-      confidenceScore: forecast.confidenceScore,
       createdAt: forecast.createdAt,
-      createdBy: forecast.createdBy,
       lines: lines.map((line) => ({
         id: line._id.toString(),
         forecastId: line.forecastId,
@@ -426,7 +424,6 @@ export class BudgetingService {
       assumptions: scenario.assumptions,
       results: scenario.results,
       createdAt: scenario.createdAt,
-      createdBy: scenario.createdBy,
     };
   }
 

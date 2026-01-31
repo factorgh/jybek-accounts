@@ -60,7 +60,7 @@ export class LedgerService {
         // Validate all accounts exist and are active
         for (const line of lines) {
           const account = await db.collection<Account>("accounts").findOne({
-            _id: new ObjectId(line.accountId),
+            _id: line.accountId,
             businessId,
             isActive: true,
           });
@@ -229,6 +229,43 @@ export class LedgerService {
     );
   }
 
+  static async postOpeningBalance(
+    businessId: string,
+    openingBalance: number,
+    equityAccountId: string,
+    cashAccountId: string,
+    transactionDate: Date,
+    userId?: string,
+  ): Promise<Transaction> {
+    if (openingBalance < 0) {
+      throw new Error("Opening balance cannot be negative.");
+    }
+
+    const lines: TransactionLineDto[] = [
+      {
+        accountId: cashAccountId,
+        debitAmount: openingBalance,
+        creditAmount: 0,
+        description: "Opening balance - Cash",
+      },
+      {
+        accountId: equityAccountId,
+        debitAmount: 0,
+        creditAmount: openingBalance,
+        description: "Opening balance - Owner's Capital",
+      },
+    ];
+
+    return await this.postJournalEntry(
+      businessId,
+      transactionDate,
+      "Opening Balance",
+      "OB-001",
+      lines,
+      userId,
+    );
+  }
+
   static async reverseTransaction(
     transactionId: string,
     reason: string,
@@ -240,7 +277,7 @@ export class LedgerService {
     const originalTransaction = await db
       .collection<Transaction>("transactions")
       .findOne({
-        _id: new ObjectId(transactionId),
+        _id: transactionId,
       });
 
     if (!originalTransaction) {
@@ -277,16 +314,22 @@ export class LedgerService {
     );
 
     // Mark original transaction as reversed
-    await db.collection("transactions").updateOne(
-      { _id: new ObjectId(transactionId) },
-      {
-        $set: {
-          isReversed: true,
-          reversedByTransactionId: reversalTransaction._id,
-          updatedAt: new Date(),
-        },
-      },
+    const clientSession = await clientPromise.then((client) =>
+      client.startSession(),
     );
+    await clientSession.withTransaction(async () => {
+      await db.collection("transactions").updateOne(
+        { _id: transactionId },
+        {
+          $set: {
+            isReversed: true,
+            reversedByTransactionId: reversalTransaction._id,
+            updatedAt: new Date(),
+          },
+        },
+        { session: clientSession },
+      );
+    });
 
     return reversalTransaction;
   }
@@ -327,7 +370,7 @@ export class LedgerService {
   ): Promise<void> {
     for (const line of transactionLines) {
       const account = await db.collection<Account>("accounts").findOne({
-        _id: new ObjectId(line.accountId),
+        _id: line.accountId,
         businessId,
       });
 
@@ -346,7 +389,7 @@ export class LedgerService {
       }
 
       await db.collection("accounts").updateOne(
-        { _id: new ObjectId(line.accountId) },
+        { _id: line.accountId },
         {
           $inc: { balance: balanceChange },
           $set: { updatedAt: new Date() },

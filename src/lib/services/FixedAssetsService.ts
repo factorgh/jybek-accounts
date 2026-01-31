@@ -31,6 +31,7 @@ export class FixedAssetsService {
 
     try {
       const clientSession = await session;
+      let assetId: string = "";
 
       const result = await clientSession.withTransaction(async () => {
         // Create fixed asset
@@ -43,7 +44,7 @@ export class FixedAssetsService {
         const assetResult = await db
           .collection("fixed_assets")
           .insertOne(asset);
-        const assetId = assetResult.insertedId.toString();
+        assetId = assetResult.insertedId.toString();
 
         // Create initial depreciation schedule
         await this.createInitialDepreciationSchedule(assetId, asset);
@@ -51,7 +52,7 @@ export class FixedAssetsService {
         return assetId;
       });
 
-      return await this.getFixedAsset(businessId, result);
+      return await this.getFixedAsset(businessId, assetId);
     } finally {
       const clientSession = await session;
       await clientSession.endSession();

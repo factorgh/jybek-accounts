@@ -44,7 +44,6 @@ export class BankReconciliationService {
       isActive: account.isActive,
       lastReconciliationDate: account.lastReconciliationDate,
       createdAt: account.createdAt,
-      updatedAt: account.updatedAt,
     };
   }
 
@@ -100,9 +99,7 @@ export class BankReconciliationService {
       closingBalance: statement.closingBalance,
       statementLines: statement.statementLines,
       importSource: statement.importSource,
-      fileName: statement.fileName,
       importedAt: statement.importedAt,
-      importedBy: statement.importedBy,
     };
   }
 
@@ -167,7 +164,7 @@ export class BankReconciliationService {
         matches.push({
           id: new ObjectId().toString(),
           statementId,
-          statementLineIndex: index,
+          statementLineId: line.id,
           transactionId: bestMatch.transactionId,
           matchType: bestMatch.ruleBased
             ? MatchType.RULE_BASED
@@ -194,7 +191,7 @@ export class BankReconciliationService {
   static async createManualMatch(
     businessId: string,
     statementId: string,
-    statementLineIndex: number,
+    statementLineId: string,
     transactionId: string,
     notes?: string,
   ): Promise<ReconciliationMatch> {
@@ -202,7 +199,7 @@ export class BankReconciliationService {
 
     const match = {
       statementId,
-      statementLineIndex,
+      statementLineId,
       transactionId,
       matchType: MatchType.MANUAL,
       confidenceScore: 1.0,
@@ -218,7 +215,7 @@ export class BankReconciliationService {
     return {
       id: result.insertedId.toString(),
       statementId: match.statementId,
-      statementLineIndex: match.statementLineIndex,
+      statementLineId: match.statementLineId,
       transactionId: match.transactionId,
       matchType: match.matchType,
       confidenceScore: match.confidenceScore,
@@ -265,7 +262,7 @@ export class BankReconciliationService {
     );
 
     const matchedAmount = matches.reduce((sum: number, match: any) => {
-      const transaction = statement.statementLines[match.statementLineIndex];
+      const transaction = statement.statementLines[match.statementLineId];
       return sum + transaction.amount;
     }, 0);
 
@@ -276,7 +273,7 @@ export class BankReconciliationService {
 
     statement.statementLines.forEach((line: any, index: number) => {
       const isMatched = matches.some(
-        (match: any) => match.statementLineIndex === index,
+        (match: any) => match.statementLineId === index,
       );
 
       if (!isMatched) {
@@ -350,7 +347,6 @@ export class BankReconciliationService {
       priority: rule.priority,
       isActive: rule.isActive,
       createdAt: rule.createdAt,
-      updatedAt: rule.updatedAt,
     };
   }
 
@@ -371,7 +367,7 @@ export class BankReconciliationService {
     return matches.map((match) => ({
       id: match._id.toString(),
       statementId: match.statementId,
-      statementLineIndex: match.statementLineIndex,
+      statementLineId: match.statementLineId,
       transactionId: match.transactionId,
       matchType: match.matchType,
       confidenceScore: match.confidenceScore,
@@ -435,21 +431,20 @@ export class BankReconciliationService {
 
     // Calculate confidence score based on match criteria
     let confidence = 0.5; // Base confidence
+    let bestMatch: any = matchingTransactions[0]; // Default to first match
 
     // Amount matching
     if (rule.matchCriteria.amountTolerance) {
       const tolerance = rule.matchCriteria.amountTolerance;
-      const bestMatch = matchingTransactions.reduce(
-        (best: any, transaction: any) => {
-          const amountDiff = Math.abs(
-            statementLine.amount - this.getTransactionAmount(transaction),
-          );
-          const bestDiff = Math.abs(
-            statementLine.amount - this.getTransactionAmount(best),
-          );
-          return amountDiff < bestDiff ? transaction : best;
-        },
-      );
+      bestMatch = matchingTransactions.reduce((best: any, transaction: any) => {
+        const amountDiff = Math.abs(
+          statementLine.amount - this.getTransactionAmount(transaction),
+        );
+        const bestDiff = Math.abs(
+          statementLine.amount - this.getTransactionAmount(best),
+        );
+        return amountDiff < bestDiff ? transaction : best;
+      }, bestMatch);
 
       const amountDiff = Math.abs(
         statementLine.amount - this.getTransactionAmount(bestMatch),

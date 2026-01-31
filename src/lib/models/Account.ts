@@ -35,7 +35,7 @@ export class AccountService {
     const db = await this.getDb();
     return await db
       .collection<Account>("accounts")
-      .findOne({ _id: new ObjectId(id) });
+      .findOne({ _id: new ObjectId(id) } as any);
   }
 
   static async updateAccount(
@@ -49,21 +49,21 @@ export class AccountService {
     };
 
     const result = await db
-      .collection("accounts")
+      .collection<Account>("accounts")
       .findOneAndUpdate(
-        { _id: new ObjectId(id) },
+        { _id: new ObjectId(id) } as any,
         { $set: update },
         { returnDocument: "after" },
       );
 
-    return result;
+    return result.value || null;
   }
 
   static async deleteAccount(id: string): Promise<boolean> {
     const db = await this.getDb();
     const result = await db
       .collection("accounts")
-      .deleteOne({ _id: new ObjectId(id) });
+      .deleteOne({ _id: new ObjectId(id) } as any);
     return result.deletedCount > 0;
   }
 
