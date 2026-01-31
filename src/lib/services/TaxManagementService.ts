@@ -1,0 +1,709 @@
+import { Db, ObjectId, ClientSession } from "mongodb";
+import clientPromise from "@/lib/db/mongodb";
+import {
+  TaxJurisdiction,
+  TaxRate,
+  TaxCode,
+  TaxReturn,
+  TaxPayment,
+  TaxLiability,
+  TaxCalculation,
+  TaxComponent,
+  TaxType,
+  FilingFrequency,
+  TaxReturnStatus,
+} from "@/types/quickbooks-features";
+
+export class TaxManagementService {
+  private static getDb(): Promise<Db> {
+    return clientPromise.then((client) => client.db("jybek_accounts"));
+  }
+
+  /**
+   * Create a new tax jurisdiction
+   */
+  static async createTaxJurisdiction(
+    jurisdictionData: Omit<TaxJurisdiction, "id" | "createdAt" | "updatedAt">,
+  ): Promise<TaxJurisdiction> {
+    const db = await this.getDb();
+
+    const jurisdiction = {
+      ...jurisdictionData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db
+      .collection("tax_jurisdictions")
+      .insertOne(jurisdiction);
+
+    return {
+      id: result.insertedId.toString(),
+      jurisdictionCode: jurisdiction.jurisdictionCode,
+      jurisdictionName: jurisdiction.jurisdictionName,
+      taxAuthority: jurisdiction.taxAuthority,
+      filingFrequency: jurisdiction.filingFrequency,
+      isActive: jurisdiction.isActive,
+      createdAt: jurisdiction.createdAt,
+      updatedAt: jurisdiction.updatedAt,
+    };
+  }
+
+  /**
+   * Get all tax jurisdictions
+   */
+  static async getTaxJurisdictions(): Promise<TaxJurisdiction[]> {
+    const db = await this.getDb();
+
+    const jurisdictions = await db
+      .collection("tax_jurisdictions")
+      .find({ isActive: true })
+      .sort({ jurisdictionName: 1 })
+      .toArray();
+
+    return jurisdictions.map((jurisdiction) => ({
+      id: jurisdiction._id.toString(),
+      jurisdictionCode: jurisdiction.jurisdictionCode,
+      jurisdictionName: jurisdiction.jurisdictionName,
+      taxAuthority: jurisdiction.taxAuthority,
+      filingFrequency: jurisdiction.filingFrequency,
+      isActive: jurisdiction.isActive,
+      createdAt: jurisdiction.createdAt,
+      updatedAt: jurisdiction.updatedAt,
+    }));
+  }
+
+  /**
+   * Create a new tax rate
+   */
+  static async createTaxRate(
+    jurisdictionId: string,
+    rateData: Omit<TaxRate, "id" | "createdAt" | "updatedAt">,
+  ): Promise<TaxRate> {
+    const db = await this.getDb();
+
+    const rate = {
+      ...rateData,
+      jurisdictionId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db.collection("tax_rates").insertOne(rate);
+
+    return {
+      id: result.insertedId.toString(),
+      jurisdictionId: rate.jurisdictionId,
+      taxType: rate.taxType,
+      ratePercentage: rate.ratePercentage,
+      effectiveDate: rate.effectiveDate,
+      expiryDate: rate.expiryDate,
+      description: rate.description,
+      isActive: rate.isActive,
+      createdAt: rate.createdAt,
+      updatedAt: rate.updatedAt,
+    };
+  }
+
+  /**
+   * Get tax rates for a jurisdiction
+   */
+  static async getTaxRates(jurisdictionId?: string): Promise<TaxRate[]> {
+    const db = await this.getDb();
+
+    const query: any = { isActive: true };
+    if (jurisdictionId) {
+      query.jurisdictionId = jurisdictionId;
+    }
+
+    const rates = await db
+      .collection("tax_rates")
+      .find(query)
+      .sort({ effectiveDate: -1 })
+      .toArray();
+
+    return rates.map((rate) => ({
+      id: rate._id.toString(),
+      jurisdictionId: rate.jurisdictionId,
+      taxType: rate.taxType,
+      ratePercentage: rate.ratePercentage,
+      effectiveDate: rate.effectiveDate,
+      expiryDate: rate.expiryDate,
+      description: rate.description,
+      isActive: rate.isActive,
+      createdAt: rate.createdAt,
+      updatedAt: rate.updatedAt,
+    }));
+  }
+
+  /**
+   * Create a tax code for a business
+   */
+  static async createTaxCode(
+    businessId: string,
+    codeData: Omit<TaxCode, "id" | "createdAt" | "updatedAt">,
+  ): Promise<TaxCode> {
+    const db = await this.getDb();
+
+    const code = {
+      ...codeData,
+      businessId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db.collection("tax_codes").insertOne(code);
+
+    return {
+      id: result.insertedId.toString(),
+      businessId: code.businessId,
+      code: code.code,
+      description: code.description,
+      taxRateId: code.taxRateId,
+      isRecoverable: code.isRecoverable,
+      glAccountId: code.glAccountId,
+      isActive: code.isActive,
+      createdAt: code.createdAt,
+      updatedAt: code.updatedAt,
+    };
+  }
+
+  /**
+   * Get tax codes for a business
+   */
+  static async getTaxCodes(businessId: string): Promise<TaxCode[]> {
+    const db = await this.getDb();
+
+    const codes = await db
+      .collection("tax_codes")
+      .find({ businessId, isActive: true })
+      .sort({ code: 1 })
+      .toArray();
+
+    return codes.map((code) => ({
+      id: code._id.toString(),
+      businessId: code.businessId,
+      code: code.code,
+      description: code.description,
+      taxRateId: code.taxRateId,
+      isRecoverable: code.isRecoverable,
+      glAccountId: code.glAccountId,
+      isActive: code.isActive,
+      createdAt: code.createdAt,
+      updatedAt: code.updatedAt,
+    }));
+  }
+
+  /**
+   * Calculate tax for a transaction
+   */
+  static async calculateTax(
+    businessId: string,
+    transactionData: {
+      amount: number;
+      taxCodeId: string;
+      transactionDate: Date;
+      jurisdictionId?: string;
+    },
+  ): Promise<TaxCalculation> {
+    const db = await this.getDb();
+
+    // Get tax code
+    const taxCode = await db.collection("tax_codes").findOne({
+      _id: new ObjectId(transactionData.taxCodeId),
+      businessId,
+      isActive: true,
+    });
+
+    if (!taxCode) {
+      throw new Error("Tax code not found");
+    }
+
+    // Get tax rate
+    const taxRate = await db.collection("tax_rates").findOne({
+      _id: new ObjectId(taxCode.taxRateId),
+      isActive: true,
+      effectiveDate: { $lte: transactionData.transactionDate },
+      $or: [
+        { expiryDate: { $gte: transactionData.transactionDate } },
+        { expiryDate: { $exists: false } },
+      ],
+    });
+
+    if (!taxRate) {
+      throw new Error("Tax rate not found for the specified date");
+    }
+
+    // Calculate tax amount
+    const taxAmount = transactionData.amount * (taxRate.ratePercentage / 100);
+
+    // Create tax breakdown
+    const taxBreakdown: TaxComponent[] = [
+      {
+        taxType: taxRate.taxType,
+        jurisdictionId: taxRate.jurisdictionId,
+        rate: taxRate.ratePercentage,
+        amount: taxAmount,
+        isRecoverable: taxCode.isRecoverable,
+      },
+    ];
+
+    return {
+      taxableAmount: transactionData.amount,
+      taxAmount,
+      taxBreakdown,
+      totalTax: taxAmount,
+    };
+  }
+
+  /**
+   * Create a tax return
+   */
+  static async createTaxReturn(
+    businessId: string,
+    returnData: Omit<TaxReturn, "id" | "createdAt" | "updatedAt">,
+  ): Promise<TaxReturn> {
+    const db = await this.getDb();
+
+    const taxReturn = {
+      ...returnData,
+      businessId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db.collection("tax_returns").insertOne(taxReturn);
+
+    return {
+      id: result.insertedId.toString(),
+      businessId: taxReturn.businessId,
+      jurisdictionId: taxReturn.jurisdictionId,
+      returnPeriod: taxReturn.returnPeriod,
+      periodStartDate: taxReturn.periodStartDate,
+      periodEndDate: taxReturn.periodEndDate,
+      totalTaxableAmount: taxReturn.totalTaxableAmount,
+      totalTaxAmount: taxReturn.totalTaxAmount,
+      status: taxReturn.status,
+      dueDate: taxReturn.dueDate,
+      filedDate: taxReturn.filedDate,
+      paidDate: taxReturn.paidDate,
+      filingReference: taxReturn.filingReference,
+      createdAt: taxReturn.createdAt,
+      updatedAt: taxReturn.updatedAt,
+    };
+  }
+
+  /**
+   * Get tax returns for a business
+   */
+  static async getTaxReturns(
+    businessId: string,
+    jurisdictionId?: string,
+    status?: TaxReturnStatus,
+  ): Promise<TaxReturn[]> {
+    const db = await this.getDb();
+
+    const query: any = { businessId };
+    if (jurisdictionId) query.jurisdictionId = jurisdictionId;
+    if (status) query.status = status;
+
+    const returns = await db
+      .collection("tax_returns")
+      .find(query)
+      .sort({ periodEndDate: -1 })
+      .toArray();
+
+    return returns.map((taxReturn) => ({
+      id: taxReturn._id.toString(),
+      businessId: taxReturn.businessId,
+      jurisdictionId: taxReturn.jurisdictionId,
+      returnPeriod: taxReturn.returnPeriod,
+      periodStartDate: taxReturn.periodStartDate,
+      periodEndDate: taxReturn.periodEndDate,
+      totalTaxableAmount: taxReturn.totalTaxableAmount,
+      totalTaxAmount: taxReturn.totalTaxAmount,
+      status: taxReturn.status,
+      dueDate: taxReturn.dueDate,
+      filedDate: taxReturn.filedDate,
+      paidDate: taxReturn.paidDate,
+      filingReference: taxReturn.filingReference,
+      createdAt: taxReturn.createdAt,
+      updatedAt: taxReturn.updatedAt,
+    }));
+  }
+
+  /**
+   * Process tax payment
+   */
+  static async processTaxPayment(
+    businessId: string,
+    paymentData: Omit<TaxPayment, "id" | "createdAt">,
+  ): Promise<TaxPayment> {
+    const db = await this.getDb();
+
+    const payment = {
+      ...paymentData,
+      businessId,
+      createdAt: new Date(),
+    };
+
+    const result = await db.collection("tax_payments").insertOne(payment);
+
+    // Update tax return status if applicable
+    if (payment.taxReturnId) {
+      await db.collection("tax_returns").updateOne(
+        { _id: new ObjectId(payment.taxReturnId) },
+        {
+          $set: {
+            status: TaxReturnStatus.PAID,
+            paidDate: payment.paymentDate,
+            updatedAt: new Date(),
+          },
+        },
+      );
+    }
+
+    // Update tax liability
+    if (paymentData.taxReturnId) {
+      const taxReturn = await db.collection("tax_returns").findOne({
+        _id: new ObjectId(paymentData.taxReturnId),
+      });
+
+      if (taxReturn) {
+        await db.collection("tax_liabilities").updateOne(
+          {
+            businessId,
+            taxType: "sales", // TODO: Get from tax return
+            jurisdictionId: taxReturn.jurisdictionId,
+            dueDate: taxReturn.dueDate,
+            isPaid: false,
+          },
+          {
+            $set: {
+              isPaid: true,
+              paidAmount: paymentData.paymentAmount,
+              updatedAt: new Date(),
+            },
+          },
+        );
+      }
+    }
+
+    return {
+      id: result.insertedId.toString(),
+      businessId: payment.businessId,
+      taxReturnId: payment.taxReturnId,
+      paymentAmount: payment.paymentAmount,
+      paymentDate: payment.paymentDate,
+      paymentMethod: payment.paymentMethod,
+      paymentReference: payment.paymentReference,
+      notes: payment.notes,
+      createdAt: payment.createdAt,
+    };
+  }
+
+  /**
+   * Get tax liabilities for a business
+   */
+  static async getTaxLiabilities(businessId: string): Promise<TaxLiability[]> {
+    const db = await this.getDb();
+
+    const liabilities = await db
+      .collection("tax_liabilities")
+      .find({ businessId })
+      .sort({ dueDate: 1 })
+      .toArray();
+
+    return liabilities.map((liability) => ({
+      id: liability._id.toString(),
+      businessId: liability.businessId,
+      taxType: liability.taxType,
+      jurisdictionId: liability.jurisdictionId,
+      liabilityAmount: liability.liabilityAmount,
+      dueDate: liability.dueDate,
+      isPaid: liability.isPaid,
+      paidAmount: liability.paidAmount,
+      createdAt: liability.createdAt,
+      updatedAt: liability.updatedAt,
+    }));
+  }
+
+  /**
+   * Generate tax return for a period
+   */
+  static async generateTaxReturn(
+    businessId: string,
+    jurisdictionId: string,
+    period: { startDate: Date; endDate: Date },
+  ): Promise<TaxReturn> {
+    const db = await this.getDb();
+
+    // Get transactions for the period
+    const transactions = await db
+      .collection("transactions")
+      .find({
+        businessId,
+        transactionDate: { $gte: period.startDate, $lte: period.endDate },
+      })
+      .toArray();
+
+    // Calculate total taxable amount and tax
+    let totalTaxableAmount = 0;
+    let totalTaxAmount = 0;
+
+    for (const transaction of transactions) {
+      // This would need to be enhanced to handle tax codes on transactions
+      // For now, we'll use a simplified calculation
+      if (transaction.type === "income") {
+        const taxableAmount =
+          transaction.lines?.reduce(
+            (sum: number, line: any) =>
+              line.creditAmount > 0 ? sum + line.creditAmount : sum,
+            0,
+          ) || 0;
+
+        totalTaxableAmount += taxableAmount;
+
+        // Get applicable tax rate (simplified)
+        const taxRate = await this.getApplicableTaxRate(
+          jurisdictionId,
+          TaxType.SALES,
+          transaction.transactionDate,
+        );
+        if (taxRate) {
+          totalTaxAmount += taxableAmount * (taxRate.ratePercentage / 100);
+        }
+      }
+    }
+
+    // Get jurisdiction to determine due date
+    const jurisdiction = await db.collection("tax_jurisdictions").findOne({
+      _id: new ObjectId(jurisdictionId),
+    });
+
+    if (!jurisdiction) {
+      throw new Error("Tax jurisdiction not found");
+    }
+
+    // Calculate due date based on filing frequency
+    const dueDate = this.calculateDueDate(
+      period.endDate,
+      jurisdiction.filingFrequency,
+    );
+
+    // Create return period string
+    const returnPeriod = this.formatReturnPeriod(
+      period,
+      jurisdiction.filingFrequency,
+    );
+
+    const taxReturn = await this.createTaxReturn(businessId, {
+      jurisdictionId,
+      returnPeriod,
+      periodStartDate: period.startDate,
+      periodEndDate: period.endDate,
+      totalTaxableAmount,
+      totalTaxAmount,
+      status: TaxReturnStatus.DRAFT,
+      dueDate,
+    });
+
+    return taxReturn;
+  }
+
+  // Private helper methods
+
+  private static async getApplicableTaxRate(
+    jurisdictionId: string,
+    taxType: TaxType,
+    date: Date,
+  ): Promise<TaxRate | null> {
+    const db = await this.getDb();
+
+    const rate = await db.collection("tax_rates").findOne({
+      jurisdictionId,
+      taxType,
+      isActive: true,
+      effectiveDate: { $lte: date },
+      $or: [{ expiryDate: { $gte: date } }, { expiryDate: { $exists: false } }],
+    });
+
+    return rate
+      ? {
+          id: rate._id.toString(),
+          jurisdictionId: rate.jurisdictionId,
+          taxType: rate.taxType,
+          ratePercentage: rate.ratePercentage,
+          effectiveDate: rate.effectiveDate,
+          expiryDate: rate.expiryDate,
+          description: rate.description,
+          isActive: rate.isActive,
+          createdAt: rate.createdAt,
+          updatedAt: rate.updatedAt,
+        }
+      : null;
+  }
+
+  private static calculateDueDate(
+    periodEndDate: Date,
+    filingFrequency: FilingFrequency,
+  ): Date {
+    const dueDate = new Date(periodEndDate);
+
+    switch (filingFrequency) {
+      case FilingFrequency.MONTHLY:
+        dueDate.setDate(dueDate.getDate() + 20); // Typically 20th of following month
+        break;
+      case FilingFrequency.QUARTERLY:
+        dueDate.setMonth(dueDate.getMonth() + 1);
+        dueDate.setDate(dueDate.getDate() + 20); // 20th of month following quarter end
+        break;
+      case FilingFrequency.ANNUAL:
+        dueDate.setMonth(dueDate.getMonth() + 3);
+        dueDate.setDate(dueDate.getDate() + 15); // 15th of April for fiscal year end
+        break;
+      case FilingFrequency.SEMI_ANNUAL:
+        dueDate.setMonth(dueDate.getMonth() + 2);
+        dueDate.setDate(dueDate.getDate() + 20); // 20th of second month following period end
+        break;
+    }
+
+    return dueDate;
+  }
+
+  private static formatReturnPeriod(
+    period: { startDate: Date; endDate: Date },
+    filingFrequency: FilingFrequency,
+  ): string {
+    const start = period.startDate;
+    const end = period.endDate;
+
+    switch (filingFrequency) {
+      case FilingFrequency.MONTHLY:
+        return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`;
+      case FilingFrequency.QUARTERLY:
+        const quarter = Math.floor(start.getMonth() / 3) + 1;
+        return `${start.getFullYear()}-Q${quarter}`;
+      case FilingFrequency.ANNUAL:
+        return `${start.getFullYear()}`;
+      case FilingFrequency.SEMI_ANNUAL:
+        const halfYear = start.getMonth() < 6 ? "H1" : "H2";
+        return `${start.getFullYear()}-${halfYear}`;
+      default:
+        return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`;
+    }
+  }
+
+  /**
+   * Get tax summary for dashboard
+   */
+  static async getTaxSummary(businessId: string): Promise<any> {
+    const db = await this.getDb();
+
+    // Get tax liabilities
+    const liabilities = await db
+      .collection("tax_liabilities")
+      .find({ businessId, isPaid: false })
+      .toArray();
+
+    const totalLiabilities = liabilities.reduce(
+      (sum, liability) => sum + liability.liabilityAmount,
+      0,
+    );
+    const overdueLiabilities = liabilities
+      .filter((liability) => new Date() > liability.dueDate)
+      .reduce((sum, liability) => sum + liability.liabilityAmount, 0);
+
+    // Get recent tax returns
+    const recentReturns = await db
+      .collection("tax_returns")
+      .find({ businessId })
+      .sort({ periodEndDate: -1 })
+      .limit(5)
+      .toArray();
+
+    // Get upcoming due dates
+    const upcomingDue = liabilities
+      .filter(
+        (liability) => new Date() <= liability.dueDate && !liability.isPaid,
+      )
+      .sort(
+        (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+      )
+      .slice(0, 3);
+
+    return {
+      totalLiabilities,
+      overdueLiabilities,
+      pendingReturns: recentReturns.filter((r: any) => r.status === "draft")
+        .length,
+      upcomingDue: upcomingDue.map((liability) => ({
+        id: liability._id.toString(),
+        taxType: liability.taxType,
+        amount: liability.liabilityAmount,
+        dueDate: liability.dueDate,
+        daysUntilDue: Math.ceil(
+          (new Date(liability.dueDate).getTime() - new Date().getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
+      })),
+      recentReturns: recentReturns.map((ret: any) => ({
+        id: ret._id.toString(),
+        jurisdictionId: ret.jurisdictionId,
+        returnPeriod: ret.returnPeriod,
+        totalTaxAmount: ret.totalTaxAmount,
+        status: ret.status,
+        dueDate: ret.dueDate,
+      })),
+    };
+  }
+
+  /**
+   * File a tax return
+   */
+  static async fileTaxReturn(
+    businessId: string,
+    returnId: string,
+    filingReference?: string,
+  ): Promise<TaxReturn> {
+    const db = await this.getDb();
+
+    await db.collection("tax_returns").updateOne(
+      { _id: new ObjectId(returnId), businessId },
+      {
+        $set: {
+          status: TaxReturnStatus.FILED,
+          filedDate: new Date(),
+          filingReference: filingReference,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    const updatedReturn = await db.collection("tax_returns").findOne({
+      _id: new ObjectId(returnId),
+    });
+
+    if (!updatedReturn) {
+      throw new Error("Tax return not found");
+    }
+
+    return {
+      id: updatedReturn._id.toString(),
+      businessId: updatedReturn.businessId,
+      jurisdictionId: updatedReturn.jurisdictionId,
+      returnPeriod: updatedReturn.returnPeriod,
+      periodStartDate: updatedReturn.periodStartDate,
+      periodEndDate: updatedReturn.periodEndDate,
+      totalTaxableAmount: updatedReturn.totalTaxableAmount,
+      totalTaxAmount: updatedReturn.totalTaxAmount,
+      status: updatedReturn.status,
+      dueDate: updatedReturn.dueDate,
+      filedDate: updatedReturn.filedDate,
+      paidDate: updatedReturn.paidDate,
+      filingReference: updatedReturn.filingReference,
+      createdAt: updatedReturn.createdAt,
+      updatedAt: updatedReturn.updatedAt,
+    };
+  }
+}
