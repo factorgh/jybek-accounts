@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/hooks/useAuth";
 
+console.log("Login page loaded");
+
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading } = useAuth();
