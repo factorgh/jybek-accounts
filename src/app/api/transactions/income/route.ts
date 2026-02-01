@@ -3,6 +3,8 @@ import { AuthService } from "@/lib/auth/jwt";
 import { LedgerService } from "@/lib/services/LedgerService";
 import { AccountService } from "@/lib/models/Account";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     // Get token from Authorization header

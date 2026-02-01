@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // Mock trial balance data - in production, this would be calculated from real transactions
 const mockTrialBalance = [
   // Assets

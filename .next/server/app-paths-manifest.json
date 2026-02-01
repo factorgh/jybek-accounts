@@ -1,9 +1,6 @@
 {
-  "/chart-of-accounts/page": "app/chart-of-accounts/page.js",
-  "/chart-of-accounts/[id]/page": "app/chart-of-accounts/[id]/page.js",
-  "/chart-of-accounts/[id]/edit/page": "app/chart-of-accounts/[id]/edit/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/chart-of-accounts/add/page": "app/chart-of-accounts/add/page.js",
-  "/customers/page": "app/customers/page.js",
-  "/api/customers/route": "app/api/customers/route.js"
+  "/page": "app/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js"
 }

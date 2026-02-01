@@ -1,15 +1,26 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node"
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
+  },
+  "env": {
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+    "MONGODB_URI": "@mongodb_uri",
+    "NEXTAUTH_SECRET": "@nextauth_secret"
+  },
+  "build": {
+    "env": {
+      "NEXTAUTH_URL": "@nextauth_url",
+      "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+      "MONGODB_URI": "@mongodb_uri",
+      "NEXTAUTH_SECRET": "@nextauth_secret"
     }
-  ]
+  }
 }

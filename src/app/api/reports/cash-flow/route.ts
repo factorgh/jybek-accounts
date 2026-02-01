@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { AdvancedReportingService } from "@/lib/services/AdvancedReportingService";
 import { verifyJwtToken } from "@/lib/auth/jwt";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     // Verify authentication
