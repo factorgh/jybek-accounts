@@ -1,7 +1,26 @@
 // API Client for making HTTP requests to our backend
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const getApiBaseUrl = () => {
+  // If explicitly set, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // In browser, use current origin
+  if (typeof window !== "undefined") {
+    return `${window.location.protocol}//${window.location.host}/api`;
+  }
+
+  // Server-side fallback
+  return "http://localhost:3000/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Debug: Log the API URL being used
+if (typeof window !== "undefined") {
+  console.log("API Base URL:", API_BASE_URL);
+}
 
 class ApiClient {
   private baseURL: string;
