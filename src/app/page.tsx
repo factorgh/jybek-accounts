@@ -31,11 +31,6 @@ export default function HomePage() {
             <Link href="/auth/login">
               <Button size="lg">Sign In</Button>
             </Link>
-            <Link href="/auth/register">
-              <Button variant="outline" size="lg">
-                Get Started
-              </Button>
-            </Link>
           </div>
         </div>
 
