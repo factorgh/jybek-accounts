@@ -1,43 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Mock customer storage - in production, this would be in MongoDB
-let customers: any[] = [
-  {
-    id: "1",
-    name: "ABC Corporation",
-    email: "billing@abccorp.com",
-    phone: "+1-555-0101",
-    address: "123 Business Ave, Suite 100, New York, NY 10001",
-    balance: 5000,
-    status: "active",
-    businessId: "demo-business",
-    totalInvoices: 12,
-    paidInvoices: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    name: "XYZ Industries",
-    email: "accounts@xyzindustries.com",
-    phone: "+1-555-0102",
-    address: "456 Industrial Blvd, Los Angeles, CA 90001",
-    balance: 2500,
-    status: "active",
-    businessId: "demo-business",
-    totalInvoices: 8,
-    paidInvoices: 6,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import clientPromise from "@/lib/db/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function GET(request: NextRequest) {
   try {
-    // In production, you would verify JWT token here
+    console.log("API Route: GET request received for customers");
+
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
+
+    // Get all customers from database
+    const customers = await db
+      .collection("customers")
+      .find({})
+      .sort({ name: 1 })
+      .toArray();
+
+    console.log(`API Route: Found ${customers.length} customers in database`);
+
     return NextResponse.json({
       success: true,
-      data: customers,
+      data: customers.map((customer) => ({
+        id: customer._id.toString(),
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address,
+        balance: customer.balance || 0,
+        status: customer.status || "active",
+        businessId: customer.businessId,
+        totalInvoices: customer.totalInvoices || 0,
+        paidInvoices: customer.paidInvoices || 0,
+        createdAt: customer.createdAt,
+        updatedAt: customer.updatedAt,
+      })),
     });
   } catch (error) {
     console.error("Error fetching customers:", error);
@@ -50,7 +46,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("API Route: POST request received");
     const customerData = await request.json();
+    console.log("API Route: Customer data received:", customerData);
 
     // Validate required fields
     if (!customerData.name || !customerData.email) {
@@ -60,10 +58,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
+
     // Check if email already exists
-    const existingCustomer = customers.find(
-      (c) => c.email === customerData.email,
-    );
+    const existingCustomer = await db.collection("customers").findOne({
+      email: customerData.email,
+    });
+
     if (existingCustomer) {
       return NextResponse.json(
         { error: "Customer with this email already exists" },
@@ -73,25 +75,41 @@ export async function POST(request: NextRequest) {
 
     // Create new customer
     const newCustomer = {
-      id: (customers.length + 1).toString(),
       name: customerData.name,
       email: customerData.email,
       phone: customerData.phone || "",
       address: customerData.address || "",
       balance: 0,
-      status: "active",
+      status: customerData.status || "active",
       businessId: "demo-business", // In production, get from JWT
       totalInvoices: 0,
       paidInvoices: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    customers.push(newCustomer);
+    const result = await db.collection("customers").insertOne(newCustomer);
+
+    const createdCustomer = {
+      id: result.insertedId.toString(),
+      name: newCustomer.name,
+      email: newCustomer.email,
+      phone: newCustomer.phone,
+      address: newCustomer.address,
+      balance: newCustomer.balance,
+      status: newCustomer.status,
+      businessId: newCustomer.businessId,
+      totalInvoices: newCustomer.totalInvoices,
+      paidInvoices: newCustomer.paidInvoices,
+      createdAt: newCustomer.createdAt.toISOString(),
+      updatedAt: newCustomer.updatedAt.toISOString(),
+    };
+
+    console.log("API Route: Customer created successfully:", createdCustomer);
 
     return NextResponse.json({
       success: true,
-      data: newCustomer,
+      data: createdCustomer,
     });
   } catch (error) {
     console.error("Error creating customer:", error);

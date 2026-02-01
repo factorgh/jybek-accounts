@@ -26,6 +26,7 @@ import { useCustomers } from "@/lib/hooks/useCustomers";
 export default function CustomersPage() {
   const { customers, isLoading, error, deleteCustomer } = useCustomers();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -77,6 +78,35 @@ export default function CustomersPage() {
     }
   };
 
+  const handleSeedCustomers = async () => {
+    if (
+      window.confirm(
+        "This will clear all existing customers and add default customers. Are you sure?",
+      )
+    ) {
+      try {
+        setIsSeeding(true);
+        const response = await fetch("/api/customers/seed", {
+          method: "POST",
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert(result.message || "Customers seeded successfully!");
+          // Refresh the customers list
+          window.location.reload();
+        } else {
+          alert(result.error || "Failed to seed customers");
+        }
+      } catch (error) {
+        alert("An error occurred while seeding the customers");
+      } finally {
+        setIsSeeding(false);
+      }
+    }
+  };
+
   const filteredCustomers = customers.filter(
     (customer) =>
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -117,12 +147,21 @@ export default function CustomersPage() {
                 Manage customer information and relationships
               </p>
             </div>
-            <Link href="/customers/create">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                New Customer
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleSeedCustomers}
+                disabled={isSeeding}
+              >
+                {isSeeding ? "Seeding..." : "Seed Database"}
               </Button>
-            </Link>
+              <Link href="/customers/create">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Customer
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 

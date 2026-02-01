@@ -1,43 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Mock customer storage - in production, this would be in MongoDB
-let customers: any[] = [
-  {
-    id: "1",
-    name: "ABC Corporation",
-    email: "billing@abccorp.com",
-    phone: "+1-555-0101",
-    address: "123 Business Ave, Suite 100, New York, NY 10001",
-    balance: 5000,
-    status: "active",
-    businessId: "demo-business",
-    totalInvoices: 12,
-    paidInvoices: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    name: "XYZ Industries",
-    email: "accounts@xyzindustries.com",
-    phone: "+1-555-0102",
-    address: "456 Industrial Blvd, Los Angeles, CA 90001",
-    balance: 2500,
-    status: "active",
-    businessId: "demo-business",
-    totalInvoices: 8,
-    paidInvoices: 6,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import clientPromise from "@/lib/db/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const customer = customers.find((c) => c.id === params.id);
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
+    const customer = await db.collection("customers").findOne({
+      _id: new ObjectId(params.id),
+    });
 
     if (!customer) {
       return NextResponse.json(
@@ -48,7 +22,20 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: customer,
+      data: {
+        id: customer._id.toString(),
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address,
+        balance: customer.balance || 0,
+        status: customer.status || "active",
+        businessId: customer.businessId,
+        totalInvoices: customer.totalInvoices || 0,
+        paidInvoices: customer.paidInvoices || 0,
+        createdAt: customer.createdAt,
+        updatedAt: customer.updatedAt,
+      },
     });
   } catch (error) {
     console.error("Error fetching customer:", error);
@@ -65,14 +52,8 @@ export async function PUT(
 ) {
   try {
     const customerData = await request.json();
-    const customerIndex = customers.findIndex((c) => c.id === params.id);
-
-    if (customerIndex === -1) {
-      return NextResponse.json(
-        { error: "Customer not found" },
-        { status: 404 },
-      );
-    }
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
 
     // Validate required fields
     if (!customerData.name || !customerData.email) {
@@ -83,9 +64,11 @@ export async function PUT(
     }
 
     // Check if email already exists for another customer
-    const existingCustomer = customers.find(
-      (c) => c.email === customerData.email && c.id !== params.id,
-    );
+    const existingCustomer = await db.collection("customers").findOne({
+      email: customerData.email,
+      _id: { $ne: new ObjectId(params.id) },
+    });
+
     if (existingCustomer) {
       return NextResponse.json(
         { error: "Customer with this email already exists" },
@@ -94,25 +77,49 @@ export async function PUT(
     }
 
     // Update customer
-    const updatedCustomer = {
-      ...customers[customerIndex],
-      name: customerData.name,
-      email: customerData.email,
-      phone: customerData.phone || customers[customerIndex].phone,
-      address: customerData.address || customers[customerIndex].address,
-      balance:
-        customerData.balance !== undefined
-          ? customerData.balance
-          : customers[customerIndex].balance,
-      status: customerData.status || customers[customerIndex].status,
-      updatedAt: new Date().toISOString(),
-    };
+    const result = await db.collection("customers").updateOne(
+      { _id: new ObjectId(params.id) },
+      {
+        $set: {
+          name: customerData.name,
+          email: customerData.email,
+          phone: customerData.phone || "",
+          address: customerData.address || "",
+          balance:
+            customerData.balance !== undefined ? customerData.balance : 0,
+          status: customerData.status || "active",
+          updatedAt: new Date(),
+        },
+      },
+    );
 
-    customers[customerIndex] = updatedCustomer;
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: "Customer not found" },
+        { status: 404 },
+      );
+    }
+
+    const updatedCustomer = await db.collection("customers").findOne({
+      _id: new ObjectId(params.id),
+    });
 
     return NextResponse.json({
       success: true,
-      data: updatedCustomer,
+      data: {
+        id: updatedCustomer!._id.toString(),
+        name: updatedCustomer!.name,
+        email: updatedCustomer!.email,
+        phone: updatedCustomer!.phone,
+        address: updatedCustomer!.address,
+        balance: updatedCustomer!.balance || 0,
+        status: updatedCustomer!.status || "active",
+        businessId: updatedCustomer!.businessId,
+        totalInvoices: updatedCustomer!.totalInvoices || 0,
+        paidInvoices: updatedCustomer!.paidInvoices || 0,
+        createdAt: updatedCustomer!.createdAt,
+        updatedAt: updatedCustomer!.updatedAt,
+      },
     });
   } catch (error) {
     console.error("Error updating customer:", error);
@@ -128,17 +135,19 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   try {
-    const customerIndex = customers.findIndex((c) => c.id === params.id);
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
 
-    if (customerIndex === -1) {
+    const result = await db.collection("customers").deleteOne({
+      _id: new ObjectId(params.id),
+    });
+
+    if (result.deletedCount === 0) {
       return NextResponse.json(
         { error: "Customer not found" },
         { status: 404 },
       );
     }
-
-    // Delete customer
-    customers.splice(customerIndex, 1);
 
     return NextResponse.json({
       success: true,
