@@ -51,12 +51,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-4 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
             Sign in to Jybek Accounts
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Access your accounting dashboard
+          </p>
         </div>
 
         <Card>
@@ -119,13 +122,13 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-4 p-3 bg-blue-50 rounded-md">
-              <p className="text-sm text-blue-800">
-                <strong>Demo Credentials:</strong>
+            <div className="mt-4 p-3 sm:p-4 bg-blue-50 rounded-md">
+              <p className="text-xs sm:text-sm text-blue-800">
+                <strong className="text-sm">Demo Credentials:</strong>
                 <br />
-                Email: admin@jybek.com
+                <span className="font-mono">admin@jybek.com</span>
                 <br />
-                Password: admin123
+                <span className="font-mono">admin123</span>
               </p>
             </div>
           </CardContent>

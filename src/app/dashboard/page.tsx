@@ -27,74 +27,84 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            Dashboard
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Welcome back! Here's what's happening with your business.
           </p>
         </div>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center justify-between">
-                Total Revenue
-                <ArrowUpRight className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg font-medium flex items-center justify-between">
+                <span className="truncate">Total Revenue</span>
+                <ArrowUpRight className="h-4 w-4 flex-shrink-0" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$45,231.89</div>
-              <p className="text-blue-100 text-sm">+20.1% from last month</p>
+              <div className="text-xl sm:text-2xl font-bold">$45,231.89</div>
+              <p className="text-blue-100 text-xs sm:text-sm">
+                +20.1% from last month
+              </p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center justify-between">
-                Total Expenses
-                <ArrowDownRight className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg font-medium flex items-center justify-between">
+                <span className="truncate">Total Expenses</span>
+                <ArrowDownRight className="h-4 w-4 flex-shrink-0" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$12,456.78</div>
-              <p className="text-green-100 text-sm">-5.3% from last month</p>
+              <div className="text-xl sm:text-2xl font-bold">$12,456.78</div>
+              <p className="text-green-100 text-xs sm:text-sm">
+                -5.3% from last month
+              </p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center justify-between">
-                Net Profit
-                <ArrowUpRight className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg font-medium flex items-center justify-between">
+                <span className="truncate">Net Profit</span>
+                <ArrowUpRight className="h-4 w-4 flex-shrink-0" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$32,775.11</div>
-              <p className="text-purple-100 text-sm">+15.2% from last month</p>
+              <div className="text-xl sm:text-2xl font-bold">$32,775.11</div>
+              <p className="text-purple-100 text-xs sm:text-sm">
+                +15.2% from last month
+              </p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center justify-between">
-                Cash Balance
-                <DollarSign className="h-4 w-4" />
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg font-medium flex items-center justify-between">
+                <span className="truncate">Cash Balance</span>
+                <DollarSign className="h-4 w-4 flex-shrink-0" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$89,234.56</div>
-              <p className="text-orange-100 text-sm">Available funds</p>
+              <div className="text-xl sm:text-2xl font-bold">$89,234.56</div>
+              <p className="text-orange-100 text-xs sm:text-sm">
+                Available funds
+              </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
               <Link href="/transactions/create">
                 <CardContent className="p-6">

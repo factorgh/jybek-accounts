@@ -214,17 +214,19 @@ export default function EditAccountPage({
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
             <Link href={`/chart-of-accounts/${params.id}`}>
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Account
+                Back
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Account</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Edit Account
+            </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Update account information and settings
           </p>
         </div>

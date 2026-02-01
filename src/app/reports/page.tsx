@@ -162,68 +162,76 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Financial Reports
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Generate and analyze comprehensive financial reports
           </p>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">Total Reports</p>
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-blue-100 text-xs sm:text-sm">
+                    Total Reports
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold">12</p>
                 </div>
-                <div className="p-3 bg-blue-400 bg-opacity-30 rounded-lg">
-                  <FileText className="h-6 w-6 text-white" />
+                <div className="p-2 sm:p-3 bg-blue-400 bg-opacity-30 rounded-lg">
+                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm">This Month</p>
-                  <p className="text-2xl font-bold">8</p>
+                  <p className="text-green-100 text-xs sm:text-sm">
+                    This Month
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold">8</p>
                 </div>
-                <div className="p-3 bg-green-400 bg-opacity-30 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-white" />
+                <div className="p-2 sm:p-3 bg-green-400 bg-opacity-30 rounded-lg">
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm">Scheduled</p>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-purple-100 text-xs sm:text-sm">
+                    Scheduled
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold">3</p>
                 </div>
-                <div className="p-3 bg-purple-400 bg-opacity-30 rounded-lg">
-                  <Calendar className="h-6 w-6 text-white" />
+                <div className="p-2 sm:p-3 bg-purple-400 bg-opacity-30 rounded-lg">
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm">Last Generated</p>
-                  <p className="text-2xl font-bold">2h</p>
+                  <p className="text-orange-100 text-xs sm:text-sm">
+                    Last Generated
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold">2h</p>
                 </div>
-                <div className="p-3 bg-orange-400 bg-opacity-30 rounded-lg">
-                  <RefreshCw className="h-6 w-6 text-white" />
+                <div className="p-2 sm:p-3 bg-orange-400 bg-opacity-30 rounded-lg">
+                  <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
             </CardContent>

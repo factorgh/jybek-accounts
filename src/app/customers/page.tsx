@@ -131,32 +131,35 @@ export default function CustomersPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
                 <Link href="/dashboard">
                   <Button variant="outline" size="sm">
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Dashboard
+                    Back
                   </Button>
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  Customers
+                </h1>
               </div>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Manage customer information and relationships
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 onClick={handleSeedCustomers}
                 disabled={isSeeding}
+                className="w-full sm:w-auto"
               >
                 {isSeeding ? "Seeding..." : "Seed Database"}
               </Button>
               <Link href="/customers/create">
-                <Button>
+                <Button className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   New Customer
                 </Button>

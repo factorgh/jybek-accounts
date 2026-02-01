@@ -203,46 +203,48 @@ export default function CustomerDetailPage({
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
                 <Link href="/customers">
                   <Button variant="outline" size="sm">
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Customers
+                    Back
                   </Button>
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                   {customer.name}
                 </h1>
-                <Badge variant="outline">
+                <Badge variant="outline" className="shrink-0">
                   <div className="flex items-center space-x-1">
                     <div
                       className={`w-2 h-2 rounded-full ${getStatusColor(customer.status)}`}
                     />
-                    <span>{getStatusLabel(customer.status)}</span>
+                    <span className="text-xs sm:text-sm">
+                      {getStatusLabel(customer.status)}
+                    </span>
                   </div>
                 </Badge>
               </div>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Customer details and account information
               </p>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <Link href={`/customers/${customer.id}/edit`}>
-                <Button>
+                <Button size="sm" className="w-full sm:w-auto">
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit Customer
+                  Edit
                 </Button>
               </Link>
               <Button
                 variant="outline"
                 onClick={handleDelete}
                 className="text-red-600 hover:text-red-700"
+                size="sm"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
