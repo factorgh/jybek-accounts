@@ -51,38 +51,44 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-6 sm:space-y-8">
-        <div>
-          <h2 className="mt-4 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
-            Sign in to Jybek Accounts
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        {/* Logo/Brand Section */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-blue-600 rounded-2xl mb-4 sm:mb-6 shadow-lg">
+            <span className="text-white text-2xl sm:text-3xl font-bold">J</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-2">
+            Jybek Accounts
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Access your accounting dashboard
+          <p className="text-sm sm:text-base text-gray-600 mb-6">
+            Professional Accounting System
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your account
+        <Card className="shadow-xl border-0">
+          <CardHeader className="space-y-2 pb-4 sm:pb-6">
+            <CardTitle className="text-xl sm:text-2xl text-center font-semibold">
+              Welcome Back
+            </CardTitle>
+            <CardDescription className="text-center text-sm sm:text-base">
+              Sign in to access your dashboard
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
+            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+              <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm sm:text-base font-medium text-gray-700"
                 >
-                  Email address
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -92,15 +98,15 @@ export default function LoginPage() {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-4 py-3 sm:py-2.5 text-base border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="admin@jybek.com"
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm sm:text-base font-medium text-gray-700"
                 >
                   Password
                 </label>
@@ -112,13 +118,17 @@ export default function LoginPage() {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-4 py-3 sm:py-2.5 text-base border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="admin123"
                 />
               </div>
 
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? "Signing in..." : "Sign in"}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 sm:py-2.5 text-base font-medium rounded-lg transition-all"
+              >
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
 

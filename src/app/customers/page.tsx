@@ -128,42 +128,50 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-green-50/30">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
-                <Link href="/dashboard">
-                  <Button variant="outline" size="sm">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
+        <div className="mb-6 sm:mb-8 lg:mb-10">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <Link href="/dashboard">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/80 hover:bg-white"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back
+                    </Button>
+                  </Link>
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                      Customers
+                    </h1>
+                    <p className="text-sm sm:text-base text-gray-600 mt-1">
+                      Manage customer relationships and information
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleSeedCustomers}
+                  disabled={isSeeding}
+                  className="w-full sm:w-auto bg-white/80 hover:bg-white"
+                >
+                  {isSeeding ? "Seeding..." : "Seed Database"}
+                </Button>
+                <Link href="/customers/create">
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Customer
                   </Button>
                 </Link>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  Customers
-                </h1>
               </div>
-              <p className="text-sm sm:text-base text-gray-600">
-                Manage customer information and relationships
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button
-                variant="outline"
-                onClick={handleSeedCustomers}
-                disabled={isSeeding}
-                className="w-full sm:w-auto"
-              >
-                {isSeeding ? "Seeding..." : "Seed Database"}
-              </Button>
-              <Link href="/customers/create">
-                <Button className="w-full sm:w-auto">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Customer
-                </Button>
-              </Link>
             </div>
           </div>
         </div>

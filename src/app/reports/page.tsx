@@ -159,20 +159,31 @@ export default function ReportsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Financial Reports
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600">
-            Generate and analyze comprehensive financial reports
-          </p>
+        <div className="mb-6 sm:mb-8 lg:mb-10">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="space-y-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                  Financial Reports
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600 max-w-2xl">
+                  Generate comprehensive financial reports and analyze business
+                  performance
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-gray-600">Real-time Data</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 lg:mb-10">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
