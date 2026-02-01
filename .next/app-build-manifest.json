@@ -25,6 +25,26 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/transactions/create/page.js"
+    ],
+    "/chart-of-accounts/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/chart-of-accounts/page.js"
+    ],
+    "/chart-of-accounts/add/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/chart-of-accounts/add/page.js"
+    ],
+    "/chart-of-accounts/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/chart-of-accounts/[id]/page.js"
+    ],
+    "/chart-of-accounts/[id]/edit/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/chart-of-accounts/[id]/edit/page.js"
     ]
   }
 }

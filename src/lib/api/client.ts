@@ -17,11 +17,6 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-// Debug: Log the API URL being used
-if (typeof window !== "undefined") {
-  console.log("API Base URL:", API_BASE_URL);
-}
-
 class ApiClient {
   private baseURL: string;
 
@@ -179,13 +174,13 @@ class ApiClient {
 
   async updateAccount(id: string, accountData: any) {
     return this.put<{ success: boolean; data: any }>(
-      `/chart-of-accounts/${id}`,
+      `/chart-of-accounts?id=${id}`,
       accountData,
     );
   }
 
   async deleteAccount(id: string) {
-    return this.delete<{ success: boolean }>(`/chart-of-accounts/${id}`);
+    return this.delete<{ success: boolean }>(`/chart-of-accounts?id=${id}`);
   }
 
   // Invoices

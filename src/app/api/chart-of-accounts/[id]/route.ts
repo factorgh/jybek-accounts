@@ -1,51 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Mock account storage - in production, this would be in MongoDB
-let accounts: any[] = [
-  {
-    id: "1",
-    code: "1000",
-    name: "Cash and Cash Equivalents",
-    type: "asset",
-    balance: 25000,
-    isActive: true,
-    description: "Petty cash, checking accounts, and savings accounts",
-    businessId: "demo-business",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    code: "1100",
-    name: "Accounts Receivable",
-    type: "asset",
-    balance: 15000,
-    isActive: true,
-    description: "Money owed to the business by customers",
-    businessId: "demo-business",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    code: "2000",
-    name: "Accounts Payable",
-    type: "liability",
-    balance: 8000,
-    isActive: true,
-    description: "Money owed to suppliers and vendors",
-    businessId: "demo-business",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import clientPromise from "@/lib/db/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const account = accounts.find((a) => a.id === params.id);
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
+
+    const account = await db.collection("chart_of_accounts").findOne({
+      _id: new ObjectId(params.id),
+    });
 
     if (!account) {
       return NextResponse.json({ error: "Account not found" }, { status: 404 });
@@ -53,7 +20,18 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: account,
+      data: {
+        id: account._id.toString(),
+        code: account.code,
+        name: account.name,
+        type: account.type,
+        balance: account.balance || 0,
+        isActive: account.isActive !== false,
+        description: account.description || "",
+        businessId: account.businessId,
+        createdAt: account.createdAt,
+        updatedAt: account.updatedAt,
+      },
     });
   } catch (error) {
     console.error("Error fetching account:", error);
@@ -70,11 +48,8 @@ export async function PUT(
 ) {
   try {
     const accountData = await request.json();
-    const accountIndex = accounts.findIndex((a) => a.id === params.id);
-
-    if (accountIndex === -1) {
-      return NextResponse.json({ error: "Account not found" }, { status: 404 });
-    }
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
 
     // Validate required fields
     if (!accountData.code || !accountData.name || !accountData.type) {
@@ -85,9 +60,11 @@ export async function PUT(
     }
 
     // Check if code already exists for another account
-    const existingAccount = accounts.find(
-      (a) => a.code === accountData.code && a.id !== params.id,
-    );
+    const existingAccount = await db.collection("chart_of_accounts").findOne({
+      code: accountData.code,
+      _id: { $ne: new ObjectId(params.id) },
+    });
+
     if (existingAccount) {
       return NextResponse.json(
         { error: "Account with this code already exists" },
@@ -96,30 +73,44 @@ export async function PUT(
     }
 
     // Update account
-    const updatedAccount = {
-      ...accounts[accountIndex],
-      code: accountData.code,
-      name: accountData.name,
-      type: accountData.type,
-      description:
-        accountData.description || accounts[accountIndex].description,
-      parentCode: accountData.parentCode || accounts[accountIndex].parentCode,
-      balance:
-        accountData.balance !== undefined
-          ? accountData.balance
-          : accounts[accountIndex].balance,
-      isActive:
-        accountData.isActive !== undefined
-          ? accountData.isActive
-          : accounts[accountIndex].isActive,
-      updatedAt: new Date().toISOString(),
-    };
+    const result = await db.collection("chart_of_accounts").updateOne(
+      { _id: new ObjectId(params.id) },
+      {
+        $set: {
+          code: accountData.code,
+          name: accountData.name,
+          type: accountData.type,
+          description: accountData.description || "",
+          parentCode: accountData.parentCode || "",
+          balance: accountData.balance !== undefined ? accountData.balance : 0,
+          isActive: accountData.isActive !== false,
+          updatedAt: new Date(),
+        },
+      },
+    );
 
-    accounts[accountIndex] = updatedAccount;
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: "Account not found" }, { status: 404 });
+    }
+
+    const updatedAccount = await db.collection("chart_of_accounts").findOne({
+      _id: new ObjectId(params.id),
+    });
 
     return NextResponse.json({
       success: true,
-      data: updatedAccount,
+      data: {
+        id: updatedAccount!._id.toString(),
+        code: updatedAccount!.code,
+        name: updatedAccount!.name,
+        type: updatedAccount!.type,
+        balance: updatedAccount!.balance || 0,
+        isActive: updatedAccount!.isActive !== false,
+        description: updatedAccount!.description || "",
+        businessId: updatedAccount!.businessId,
+        createdAt: updatedAccount!.createdAt,
+        updatedAt: updatedAccount!.updatedAt,
+      },
     });
   } catch (error) {
     console.error("Error updating account:", error);
@@ -135,14 +126,16 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   try {
-    const accountIndex = accounts.findIndex((a) => a.id === params.id);
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
 
-    if (accountIndex === -1) {
+    const result = await db.collection("chart_of_accounts").deleteOne({
+      _id: new ObjectId(params.id),
+    });
+
+    if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Account not found" }, { status: 404 });
     }
-
-    // Delete account
-    accounts.splice(accountIndex, 1);
 
     return NextResponse.json({
       success: true,

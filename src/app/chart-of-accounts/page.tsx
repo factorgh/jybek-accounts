@@ -50,6 +50,7 @@ export default function ChartOfAccountsPage() {
   const { accounts, isLoading, error, deleteAccount } = useChartOfAccounts();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -153,6 +154,35 @@ export default function ChartOfAccountsPage() {
     }
   };
 
+  const handleSeedDatabase = async () => {
+    if (
+      window.confirm(
+        "This will clear all existing accounts and add default accounts. Are you sure?",
+      )
+    ) {
+      try {
+        setIsSeeding(true);
+        const response = await fetch("/api/chart-of-accounts/seed", {
+          method: "POST",
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert(result.message || "Database seeded successfully!");
+          // Refresh the accounts list
+          window.location.reload();
+        } else {
+          alert(result.error || "Failed to seed database");
+        }
+      } catch (error) {
+        alert("An error occurred while seeding the database");
+      } finally {
+        setIsSeeding(false);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
@@ -175,10 +205,21 @@ export default function ChartOfAccountsPage() {
                 Manage your accounting structure and track account balances
               </p>
             </div>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Account
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleSeedDatabase}
+                disabled={isSeeding}
+              >
+                {isSeeding ? "Seeding..." : "Seed Database"}
+              </Button>
+              <Link href="/chart-of-accounts/add">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Account
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 

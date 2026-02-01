@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import apiClient from "@/lib/api/client";
 
 interface Account {
   id: string;
@@ -30,16 +31,10 @@ export function useChartOfAccounts() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch("/api/chart-of-accounts");
+      const response = await apiClient.getAccounts();
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setAccounts(data.data);
+      if (response.success) {
+        setAccounts(response.data);
       } else {
         setError("Failed to fetch accounts");
       }
@@ -54,23 +49,11 @@ export function useChartOfAccounts() {
     try {
       setError(null);
 
-      const response = await fetch("/api/chart-of-accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(accountData),
-      });
+      const response = await apiClient.createAccount(accountData);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setAccounts((prev) => [...prev, data.data]);
-        return { success: true, data: data.data };
+      if (response.success) {
+        setAccounts((prev) => [...prev, response.data]);
+        return { success: true, data: response.data };
       } else {
         setError("Failed to create account");
         return { success: false, error: "Failed to create account" };
@@ -87,23 +70,13 @@ export function useChartOfAccounts() {
     try {
       setError(null);
 
-      const response = await fetch(`/api/chart-of-accounts/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(accountData),
-      });
+      const response = await apiClient.updateAccount(id, accountData);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setAccounts((prev) => prev.map((a) => (a.id === id ? data.data : a)));
-        return { success: true, data: data.data };
+      if (response.success) {
+        setAccounts((prev) =>
+          prev.map((a) => (a.id === id ? response.data : a)),
+        );
+        return { success: true, data: response.data };
       } else {
         setError("Failed to update account");
         return { success: false, error: "Failed to update account" };
@@ -120,17 +93,9 @@ export function useChartOfAccounts() {
     try {
       setError(null);
 
-      const response = await fetch(`/api/chart-of-accounts/${id}`, {
-        method: "DELETE",
-      });
+      const response = await apiClient.deleteAccount(id);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         setAccounts((prev) => prev.filter((a) => a.id !== id));
         return { success: true };
       } else {
