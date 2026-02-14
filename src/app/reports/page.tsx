@@ -5,16 +5,16 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CashFlowReportComponent } from "@/components/reports/CashFlowReport";
+import ExportButton from "@/components/ui/export-button";
 import {
   FileText,
   TrendingUp,
   Users,
   DollarSign,
-  Download,
   RefreshCw,
   Calendar,
   Filter,
+  Activity,
 } from "lucide-react";
 import {
   CashFlowReport,
@@ -45,7 +45,50 @@ export default function ReportsPage() {
 
   const handleExport = (format: "pdf" | "excel" | "csv") => {
     console.log(`Exporting report as ${format}`);
-    // Implement export functionality
+    // TODO: Implement actual export functionality
+    // For now, create sample data for export
+    const sampleData = [
+      {
+        "Report Type": "Cash Flow",
+        Period: "Current Month",
+        Amount: "$50,000",
+      },
+      {
+        "Report Type": "Aged Receivables",
+        Period: "Q1 2024",
+        Amount: "$25,000",
+      },
+      { "Report Type": "Budget Variance", Period: "2024", Amount: "$5,000" },
+    ];
+
+    // Create CSV content
+    const headers = Object.keys(sampleData[0]);
+    const csvContent = [
+      headers.join(","),
+      ...sampleData.map((row) =>
+        headers
+          .map((header) => {
+            const value = row[header];
+            return typeof value === "string" && value.includes(",")
+              ? `"${value.replace(/"/g, '""')}"`
+              : value;
+          })
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `financial-report-${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const ReportCard = ({
@@ -211,13 +254,35 @@ export default function ReportsPage() {
           </TabsList>
 
           <TabsContent value="cash-flow" className="space-y-6">
-            {cashFlowData && (
+            {cashFlowData ? (
               <CashFlowReportComponent
                 data={cashFlowData}
                 onRefresh={handleRefresh}
                 onExport={handleExport}
                 isLoading={isLoading}
               />
+            ) : (
+              <div className="text-center py-12">
+                <Activity className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No Cash Flow Data Available
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Generate cash flow reports to analyze your business
+                  performance and liquidity
+                </p>
+                <ExportButton
+                  data={[
+                    {
+                      "Report Type": "Cash Flow",
+                      Period: "Current",
+                      Message: "No data available",
+                    },
+                  ]}
+                  filename="cash-flow-report"
+                  title="Generate Cash Flow Report"
+                />
+              </div>
             )}
           </TabsContent>
 
@@ -231,10 +296,43 @@ export default function ReportsPage() {
                       <Filter className="h-4 w-4 mr-2" />
                       Filter
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
+                    <ExportButton
+                      data={
+                        agedReceivablesData
+                          ? [
+                              {
+                                "Report Type": "Aged Receivables",
+                                Period: "Current",
+                                "Total Outstanding":
+                                  agedReceivablesData.totalOutstanding,
+                              },
+                              {
+                                "Report Type": "Aged Receivables",
+                                Period: "Current",
+                                "Current Amount":
+                                  agedReceivablesData.currentAmount,
+                              },
+                              {
+                                "Report Type": "Aged Receivables",
+                                Period: "Current",
+                                "Overdue Amount":
+                                  agedReceivablesData.overdueAmount,
+                              },
+                              ...agedReceivablesData.agingBuckets.map(
+                                (bucket) => ({
+                                  "Report Type": "Aged Receivables",
+                                  Period: bucket.daysRange,
+                                  Invoices: bucket.count,
+                                  Amount: bucket.amount,
+                                  Percentage: bucket.percentage + "%",
+                                }),
+                              ),
+                            ]
+                          : []
+                      }
+                      filename="aged-receivables-report"
+                      title="Export Aged Receivables Report"
+                    />
                   </div>
                 </CardTitle>
               </CardHeader>
@@ -303,14 +401,14 @@ export default function ReportsPage() {
                                 />
                               </div>
                             </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold">
-                              ${bucket.amount.toLocaleString()}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {bucket.percentage.toFixed(1)}%
-                            </p>
+                            <div className="text-right">
+                              <p className="font-semibold">
+                                ${bucket.amount.toLocaleString()}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {bucket.percentage.toFixed(1)}%
+                              </p>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -326,10 +424,43 @@ export default function ReportsPage() {
                       Generate an aged receivables report to see customer
                       payment aging
                     </p>
-                    <Button>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Generate Report
-                    </Button>
+                    <ExportButton
+                      data={
+                        agedReceivablesData
+                          ? [
+                              {
+                                "Report Type": "Aged Receivables",
+                                Period: "Current",
+                                "Total Outstanding":
+                                  agedReceivablesData.totalOutstanding,
+                              },
+                              {
+                                "Report Type": "Aged Receivables",
+                                Period: "Current",
+                                "Current Amount":
+                                  agedReceivablesData.currentAmount,
+                              },
+                              {
+                                "Report Type": "Aged Receivables",
+                                Period: "Current",
+                                "Overdue Amount":
+                                  agedReceivablesData.overdueAmount,
+                              },
+                              ...agedReceivablesData.agingBuckets.map(
+                                (bucket) => ({
+                                  "Report Type": "Aged Receivables",
+                                  Period: bucket.daysRange,
+                                  Invoices: bucket.count,
+                                  Amount: bucket.amount,
+                                  Percentage: bucket.percentage + "%",
+                                }),
+                              ),
+                            ]
+                          : []
+                      }
+                      filename="aged-receivables-report"
+                      title="Export Aged Receivables Report"
+                    />
                   </div>
                 )}
               </CardContent>
@@ -350,10 +481,21 @@ export default function ReportsPage() {
                   <p className="text-gray-600 mb-4">
                     Compare budgeted vs actual performance
                   </p>
-                  <Button>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Create Budget Variance Report
-                  </Button>
+                  <ExportButton
+                    data={[
+                      {
+                        "Report Type": "Budget Variance",
+                        Period: "2024",
+                        Amount: "$5,000",
+                      },
+                      {
+                        "Report Type": "Budget Variance",
+                        Description: "Compare budgeted vs actual performance",
+                      },
+                    ]}
+                    filename="budget-variance-report"
+                    title="Generate Budget Variance Report"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -374,10 +516,21 @@ export default function ReportsPage() {
                     Create custom reports with your preferred metrics and
                     layouts
                   </p>
-                  <Button>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Build Custom Report
-                  </Button>
+                  <ExportButton
+                    data={[
+                      {
+                        "Report Type": "Custom Report",
+                        Period: "2024",
+                        Amount: "$10,000",
+                      },
+                      {
+                        "Report Type": "Custom Report",
+                        Description: "User-defined custom reports",
+                      },
+                    ]}
+                    filename="custom-report"
+                    title="Generate Custom Report"
+                  />
                 </div>
               </CardContent>
             </Card>
