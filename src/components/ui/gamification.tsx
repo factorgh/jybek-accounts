@@ -267,50 +267,5 @@ export function Gamification({
   );
 }
 
-// Sample achievement data for demonstration
-export const sampleAchievements: Achievement[] = [
-  {
-    id: "first-transaction",
-    name: "First Steps",
-    description: "Record your first transaction",
-    icon: <Trophy className="h-5 w-5" />,
-    progress: 1,
-    maxProgress: 1,
-    unlocked: true,
-    rarity: "common",
-    points: 10,
-  },
-  {
-    id: "week-streak",
-    name: "Consistency King",
-    description: "Maintain a 7-day streak",
-    icon: <Zap className="h-5 w-5" />,
-    progress: 3,
-    maxProgress: 7,
-    unlocked: false,
-    rarity: "rare",
-    points: 50,
-  },
-  {
-    id: "invoice-master",
-    name: "Invoice Master",
-    description: "Create 100 invoices",
-    icon: <Award className="h-5 w-5" />,
-    progress: 45,
-    maxProgress: 100,
-    unlocked: false,
-    rarity: "epic",
-    points: 100,
-  },
-  {
-    id: "financial-guru",
-    name: "Financial Guru",
-    description: "Generate 50 financial reports",
-    icon: <Star className="h-5 w-5" />,
-    progress: 12,
-    maxProgress: 50,
-    unlocked: false,
-    rarity: "legendary",
-    points: 200,
-  },
-];
+// TODO: Replace with real achievement data from API
+export const sampleAchievements: Achievement[] = [];

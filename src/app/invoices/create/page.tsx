@@ -102,7 +102,29 @@ export default function CreateInvoicePage() {
     setIsLoading(true);
 
     try {
-      // Mock invoice creation - in production, this would call your API
+      // Create invoice via API
+      const response = await fetch("/api/invoices", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName: formData.customerName,
+          customerEmail: formData.customerEmail,
+          invoiceDate: formData.invoiceDate,
+          dueDate: formData.dueDate,
+          items: formData.items,
+          notes: formData.notes,
+          terms: formData.terms,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create invoice");
+      }
+
       alert("Invoice created successfully!");
       router.push("/invoices");
     } catch (error) {

@@ -1,37 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Mock invoice storage - in production, this would be in MongoDB
-let invoices: any[] = [
-  {
-    id: "1",
-    invoiceNumber: "INV-001",
-    invoiceDate: "2024-01-15",
-    dueDate: "2024-02-14",
-    customerId: "1",
-    customerName: "ABC Corporation",
-    customerEmail: "billing@abccorp.com",
-    status: "paid",
-    subtotal: 5000,
-    tax: 400,
-    total: 5400,
-    paidAmount: 5400,
-    businessId: "demo-business",
-    items: [
-      {
-        description: "Consulting Services",
-        quantity: 40,
-        unitPrice: 125,
-        amount: 5000,
-      },
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import clientPromise from "@/lib/db/mongodb";
 
 export async function GET(request: NextRequest) {
   try {
-    // In production, you would verify JWT token here
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
+
+    const invoices = await db.collection("invoices").find({}).toArray();
+
     return NextResponse.json({
       success: true,
       data: invoices,
@@ -47,6 +23,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
     const invoiceData = await request.json();
 
     // Validate required fields
@@ -71,8 +49,8 @@ export async function POST(request: NextRequest) {
 
     // Create new invoice
     const newInvoice = {
-      id: (invoices.length + 1).toString(),
-      invoiceNumber: `INV-${String(invoices.length + 1).padStart(3, "0")}`,
+      ...invoiceData,
+      invoiceNumber: `INV-${Date.now()}`,
       invoiceDate:
         invoiceData.invoiceDate || new Date().toISOString().split("T")[0],
       dueDate:
@@ -80,27 +58,22 @@ export async function POST(request: NextRequest) {
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           .toISOString()
           .split("T")[0],
-      customerId: invoiceData.customerId || "",
-      customerName: invoiceData.customerName,
-      customerEmail: invoiceData.customerEmail || "",
       status: "draft",
       subtotal,
       tax,
       total,
       paidAmount: 0,
-      businessId: "demo-business", // In production, get from JWT
-      items: invoiceData.items,
       notes: invoiceData.notes || "",
       terms: invoiceData.terms || "Net 30",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    invoices.push(newInvoice);
+    const result = await db.collection("invoices").insertOne(newInvoice);
 
     return NextResponse.json({
       success: true,
-      data: newInvoice,
+      data: { ...newInvoice, id: result.insertedId },
     });
   } catch (error) {
     console.error("Error creating invoice:", error);

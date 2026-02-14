@@ -33,78 +33,11 @@ export function InventoryDashboard({ businessId }: InventoryDashboardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Mock data for demonstration
-  const mockItems: InventoryItem[] = [
-    {
-      id: "1",
-      businessId,
-      itemCode: "ITEM001",
-      description: "Office Laptop Computer",
-      categoryId: "cat1",
-      unitOfMeasure: "Each",
-      costMethod: "FIFO" as any,
-      currentStock: 25,
-      reorderPoint: 10,
-      maxStock: 50,
-      unitCost: 899.99,
-      sellingPrice: 1299.99,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: "2",
-      businessId,
-      itemCode: "ITEM002",
-      description: "Wireless Mouse",
-      categoryId: "cat1",
-      unitOfMeasure: "Each",
-      costMethod: "FIFO" as any,
-      currentStock: 8,
-      reorderPoint: 15,
-      maxStock: 40,
-      unitCost: 25.5,
-      sellingPrice: 45.99,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: "3",
-      businessId,
-      itemCode: "ITEM003",
-      description: "Desk Chair",
-      categoryId: "cat2",
-      unitOfMeasure: "Each",
-      costMethod: "WEIGHTED_AVERAGE" as any,
-      currentStock: 45,
-      reorderPoint: 20,
-      maxStock: 60,
-      unitCost: 150.0,
-      sellingPrice: 249.99,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
-
-  const mockReorderSuggestions: ReorderSuggestion[] = [
-    {
-      itemId: "2",
-      itemCode: "ITEM002",
-      description: "Wireless Mouse",
-      currentStock: 8,
-      reorderPoint: 15,
-      suggestedQuantity: 25,
-      urgency: "high",
-      estimatedCost: 637.5,
-    },
-  ];
-
   useEffect(() => {
-    // Load mock data
-    setItems(mockItems);
-    setReorderSuggestions(mockReorderSuggestions);
+    // Load data from API
+    // TODO: Implement API calls to fetch real data
+    setItems([]);
+    setReorderSuggestions([]);
   }, [businessId]);
 
   const formatCurrency = (amount: number) => {

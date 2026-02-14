@@ -61,138 +61,25 @@ export default function ProfitLossPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState("current-month");
 
-  // Mock data for demonstration
-  const mockProfitLoss: ProfitLossItem[] = [
-    // Revenue
-    {
-      accountCode: "4000",
-      accountName: "Sales Revenue",
-      category: "revenue",
-      currentAmount: 75000,
-      previousAmount: 65000,
-    },
-    {
-      accountCode: "4100",
-      accountName: "Service Revenue",
-      category: "revenue",
-      currentAmount: 25000,
-      previousAmount: 22000,
-    },
-    {
-      accountCode: "4200",
-      accountName: "Interest Income",
-      category: "other_income",
-      currentAmount: 500,
-      previousAmount: 300,
-    },
-
-    // Cost of Goods Sold
-    {
-      accountCode: "5000",
-      accountName: "Cost of Goods Sold",
-      category: "cost_of_goods_sold",
-      currentAmount: 30000,
-      previousAmount: 26000,
-    },
-
-    // Operating Expenses
-    {
-      accountCode: "5100",
-      accountName: "Salaries and Wages",
-      category: "operating_expenses",
-      currentAmount: 20000,
-      previousAmount: 18000,
-    },
-    {
-      accountCode: "5200",
-      accountName: "Office Rent",
-      category: "operating_expenses",
-      currentAmount: 12000,
-      previousAmount: 12000,
-    },
-    {
-      accountCode: "5300",
-      accountName: "Marketing Expenses",
-      category: "operating_expenses",
-      currentAmount: 5000,
-      previousAmount: 4000,
-    },
-    {
-      accountCode: "5400",
-      accountName: "Utilities",
-      category: "operating_expenses",
-      currentAmount: 3000,
-      previousAmount: 2500,
-    },
-    {
-      accountCode: "5500",
-      accountName: "Depreciation",
-      category: "operating_expenses",
-      currentAmount: 2000,
-      previousAmount: 2000,
-    },
-
-    // Other Expenses
-    {
-      accountCode: "5600",
-      accountName: "Interest Expense",
-      category: "other_expenses",
-      currentAmount: 800,
-      previousAmount: 1000,
-    },
-  ];
-
-  useEffect(() => {
-    loadProfitLoss();
-  }, [selectedPeriod]);
-
   const loadProfitLoss = async () => {
     setIsLoading(true);
 
     try {
+      // TODO: Implement API call to fetch real data
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Calculate variances
-      const dataWithVariances = mockProfitLoss.map((item) => ({
-        ...item,
-        variance: item.previousAmount
-          ? item.currentAmount - item.previousAmount
-          : 0,
-        variancePercent: item.previousAmount
-          ? ((item.currentAmount - item.previousAmount) / item.previousAmount) *
-            100
-          : 0,
-      }));
-
-      setProfitLoss(dataWithVariances);
+      setProfitLoss([]);
 
       // Calculate summary
-      const totalRevenue = dataWithVariances
-        .filter((item) => item.category === "revenue")
-        .reduce((sum, item) => sum + item.currentAmount, 0);
-
-      const totalCostOfGoodsSold = dataWithVariances
-        .filter((item) => item.category === "cost_of_goods_sold")
-        .reduce((sum, item) => sum + item.currentAmount, 0);
-
-      const grossProfit = totalRevenue - totalCostOfGoodsSold;
-
-      const totalOperatingExpenses = dataWithVariances
-        .filter((item) => item.category === "operating_expenses")
-        .reduce((sum, item) => sum + item.currentAmount, 0);
-
-      const operatingIncome = grossProfit - totalOperatingExpenses;
-
-      const totalOtherIncome = dataWithVariances
-        .filter((item) => item.category === "other_income")
-        .reduce((sum, item) => sum + item.currentAmount, 0);
-
-      const totalOtherExpenses = dataWithVariances
-        .filter((item) => item.category === "other_expenses")
-        .reduce((sum, item) => sum + item.currentAmount, 0);
-
-      const netIncome = operatingIncome + totalOtherIncome - totalOtherExpenses;
+      const totalRevenue = 0;
+      const totalCostOfGoodsSold = 0;
+      const grossProfit = 0;
+      const totalOperatingExpenses = 0;
+      const operatingIncome = 0;
+      const totalOtherIncome = 0;
+      const totalOtherExpenses = 0;
+      const netIncome = 0;
 
       setSummary({
         totalRevenue,
@@ -203,20 +90,21 @@ export default function ProfitLossPage() {
         totalOtherIncome,
         totalOtherExpenses,
         netIncome,
-        grossProfitMargin:
-          totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0,
-        operatingMargin:
-          totalRevenue > 0 ? (operatingIncome / totalRevenue) * 100 : 0,
-        netProfitMargin:
-          totalRevenue > 0 ? (netIncome / totalRevenue) * 100 : 0,
+        grossProfitMargin: 0,
+        operatingMargin: 0,
+        netProfitMargin: 0,
         period: new Date().toISOString().split("T")[0],
       });
     } catch (error) {
-      console.error("Error loading profit & loss:", error);
+      console.error("Error loading profit & loss data:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadProfitLoss();
+  }, [selectedPeriod]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {

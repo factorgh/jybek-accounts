@@ -47,124 +47,12 @@ export function FixedAssetsDashboard({
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Mock data for demonstration
-  const mockAssets: FixedAsset[] = [
-    {
-      id: "1",
-      businessId,
-      assetNumber: "FA001",
-      description: "Office Building - Main Floor",
-      categoryId: "cat1",
-      acquisitionDate: new Date("2020-01-15"),
-      acquisitionCost: 500000,
-      depreciationMethod: DepreciationMethod.STRAIGHT_LINE,
-      usefulLifeYears: 10,
-      residualValue: 5000,
-      currentLocation: "Main Office",
-      responsiblePerson: "John Doe",
-      status: AssetStatus.ACTIVE,
-      ifrsClassification: IFRSAssetClassification.PPE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: "2",
-      businessId,
-      assetNumber: "FA002",
-      description: "Delivery Van",
-      categoryId: "cat2",
-      acquisitionDate: new Date("2022-03-20"),
-      acquisitionCost: 45000,
-      depreciationMethod: DepreciationMethod.DECLINING_BALANCE,
-      usefulLifeYears: 5,
-      residualValue: 2000,
-      currentLocation: "Warehouse",
-      responsiblePerson: "Jane Smith",
-      status: AssetStatus.ACTIVE,
-      ifrsClassification: IFRSAssetClassification.PPE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: "3",
-      businessId,
-      assetNumber: "FA003",
-      description: "Computer Equipment",
-      categoryId: "cat3",
-      acquisitionDate: new Date("2023-01-10"),
-      acquisitionCost: 15000,
-      depreciationMethod: DepreciationMethod.STRAIGHT_LINE,
-      usefulLifeYears: 3,
-      residualValue: 500,
-      currentLocation: "Office",
-      responsiblePerson: "Mike Johnson",
-      status: AssetStatus.ACTIVE,
-      ifrsClassification: IFRSAssetClassification.PPE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: "4",
-      businessId,
-      assetNumber: "FA004",
-      description: "Manufacturing Machine",
-      categoryId: "cat4",
-      acquisitionDate: new Date("2021-06-15"),
-      acquisitionCost: 120000,
-      depreciationMethod: DepreciationMethod.SUM_OF_YEARS,
-      usefulLifeYears: 15,
-      residualValue: 10000,
-      currentLocation: "Factory Floor",
-      responsiblePerson: "Sarah Wilson",
-      status: AssetStatus.IMPAIRED,
-      ifrsClassification: IFRSAssetClassification.PPE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
-
-  const mockDepreciationSchedules: DepreciationSchedule[] = [
-    {
-      id: "1",
-      assetId: "1",
-      fiscalYear: 2024,
-      openingCarryingAmount: 475000,
-      depreciationExpense: 15000,
-      closingCarryingAmount: 460000,
-      accumulatedDepreciation: 40000,
-      calculationDate: new Date("2024-01-01"),
-    },
-    {
-      id: "2",
-      assetId: "2",
-      fiscalYear: 2024,
-      openingCarryingAmount: 33750,
-      depreciationExpense: 5625,
-      closingCarryingAmount: 28125,
-      accumulatedDepreciation: 16875,
-      calculationDate: new Date("2024-01-01"),
-    },
-  ];
-
-  const mockImpairmentTests: ImpairmentTest[] = [
-    {
-      id: "1",
-      assetId: "4",
-      testDate: new Date("2024-03-15"),
-      carryingAmount: 85000,
-      recoverableAmount: 70000,
-      impairmentLoss: 15000,
-      testMethod: ImpairmentTestMethod.VALUE_IN_USE,
-      performedBy: "System",
-      createdAt: new Date("2024-03-15"),
-    },
-  ];
-
   useEffect(() => {
-    // Load mock data
-    setAssets(mockAssets);
-    setDepreciationSchedules(mockDepreciationSchedules);
-    setImpairmentTests(mockImpairmentTests);
+    // Load data from API
+    // TODO: Implement API calls to fetch real data
+    setAssets([]);
+    setDepreciationSchedules([]);
+    setImpairmentTests([]);
   }, [businessId]);
 
   const formatCurrency = (amount: number) => {

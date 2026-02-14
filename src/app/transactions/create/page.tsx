@@ -102,7 +102,28 @@ export default function CreateTransactionPage() {
         return;
       }
 
-      // Mock transaction creation - in production, this would call your API
+      // Create transaction via API
+      const response = await fetch("/api/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transactionDate: formData.transactionDate,
+          description: formData.description,
+          reference: formData.reference,
+          type: formData.type,
+          totalAmount: totalDebits,
+          lines: formData.lines,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create transaction");
+      }
+
       alert("Transaction created successfully!");
       router.push("/transactions");
     } catch (error) {

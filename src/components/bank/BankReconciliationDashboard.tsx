@@ -40,86 +40,11 @@ export function BankReconciliationDashboard({
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Mock data for demonstration
-  const mockAccounts: BankAccount[] = [
-    {
-      id: "1",
-      businessId,
-      accountName: "Business Checking Account",
-      accountNumber: "****1234",
-      bankName: "Chase Bank",
-      accountType: BankAccountType.CHECKING,
-      currency: "USD",
-      isActive: true,
-      lastReconciliationDate: new Date("2024-03-15"),
-      createdAt: new Date(),
-    },
-    {
-      id: "2",
-      businessId,
-      accountName: "Business Savings Account",
-      accountNumber: "****5678",
-      bankName: "Bank of America",
-      accountType: BankAccountType.SAVINGS,
-      currency: "USD",
-      isActive: true,
-      lastReconciliationDate: new Date("2024-03-10"),
-      createdAt: new Date(),
-    },
-    {
-      id: "3",
-      businessId,
-      accountName: "Business Credit Card",
-      accountNumber: "****9012",
-      bankName: "American Express",
-      accountType: BankAccountType.BUSINESS,
-      currency: "USD",
-      isActive: true,
-      lastReconciliationDate: new Date("2024-03-12"),
-      createdAt: new Date(),
-    },
-  ];
-
-  const mockMatches: ReconciliationMatch[] = [
-    {
-      id: "1",
-      statementId: "stmt_001",
-      statementLineId: "line_001",
-      transactionId: "txn_001",
-      matchType: MatchType.AUTO,
-      confidenceScore: 0.95,
-      matchedBy: "system",
-      matchedAt: new Date(),
-      notes: "Automatically matched by amount and date",
-    },
-    {
-      id: "2",
-      statementId: "stmt_001",
-      statementLineId: "line_002",
-      transactionId: "txn_002",
-      matchType: MatchType.RULE_BASED,
-      confidenceScore: 0.85,
-      matchedBy: "system",
-      matchedAt: new Date(),
-      notes: "Matched using custom reconciliation rules",
-    },
-    {
-      id: "3",
-      statementId: "stmt_001",
-      statementLineId: "line_003",
-      transactionId: "txn_003",
-      matchType: MatchType.MANUAL,
-      confidenceScore: 1.0,
-      matchedBy: "john.doe",
-      matchedAt: new Date(),
-      notes: "Manually matched by user",
-    },
-  ];
-
   useEffect(() => {
-    // Load mock data
-    setAccounts(mockAccounts);
-    setMatches(mockMatches);
+    // Load data from API
+    // TODO: Implement API calls to fetch real data
+    setAccounts([]);
+    setMatches([]);
   }, [businessId]);
 
   const formatCurrency = (amount: number) => {

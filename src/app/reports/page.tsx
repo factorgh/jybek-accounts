@@ -28,88 +28,11 @@ export default function ReportsPage() {
     useState<AgedReceivablesReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data for demonstration
-  const mockCashFlowData: CashFlowReport = {
-    id: "1",
-    businessId: "demo-business",
-    reportPeriod: {
-      startDate: new Date("2024-01-01"),
-      endDate: new Date("2024-03-31"),
-    },
-    operatingActivities: [
-      {
-        description: "Customer Payment - ABC Corp",
-        amount: 15000,
-        category: "Cash receipts from customers",
-        accountId: "acc-1",
-        transactionId: "tx-1",
-      },
-      {
-        description: "Supplier Payment - Office Supplies",
-        amount: -3500,
-        category: "Cash payments to suppliers",
-        accountId: "acc-2",
-        transactionId: "tx-2",
-      },
-      {
-        description: "Customer Payment - XYZ Ltd",
-        amount: 8500,
-        category: "Cash receipts from customers",
-        accountId: "acc-1",
-        transactionId: "tx-3",
-      },
-    ],
-    investingActivities: [
-      {
-        description: "Equipment Purchase",
-        amount: -12000,
-        category: "Purchase of equipment",
-        accountId: "acc-3",
-        transactionId: "tx-4",
-      },
-    ],
-    financingActivities: [
-      {
-        description: "Loan Proceeds",
-        amount: 25000,
-        category: "Loan proceeds",
-        accountId: "acc-4",
-        transactionId: "tx-5",
-      },
-      {
-        description: "Loan Repayment",
-        amount: -5000,
-        category: "Loan repayment",
-        accountId: "acc-4",
-        transactionId: "tx-6",
-      },
-    ],
-    netIncreaseInCash: 28000,
-    cashAtBeginningOfPeriod: 45000,
-    cashAtEndOfPeriod: 73000,
-    generatedAt: new Date(),
-  };
-
-  const mockAgedReceivablesData: AgedReceivablesReport = {
-    id: "1",
-    businessId: "demo-business",
-    asOfDate: new Date("2024-03-31"),
-    agingBuckets: [
-      { daysRange: "Current", amount: 25000, count: 15, percentage: 45.5 },
-      { daysRange: "1-30", amount: 12000, count: 8, percentage: 21.8 },
-      { daysRange: "31-60", amount: 8000, count: 5, percentage: 14.5 },
-      { daysRange: "61-90", amount: 6000, count: 3, percentage: 10.9 },
-      { daysRange: "91+", amount: 4000, count: 2, percentage: 7.3 },
-    ],
-    totalOutstanding: 55000,
-    currentAmount: 25000,
-    overdueAmount: 30000,
-  };
-
   useEffect(() => {
-    // Load mock data
-    setCashFlowData(mockCashFlowData);
-    setAgedReceivablesData(mockAgedReceivablesData);
+    // Load data from API
+    // TODO: Implement API calls to fetch real data
+    setCashFlowData(null);
+    setAgedReceivablesData(null);
   }, []);
 
   const handleRefresh = () => {

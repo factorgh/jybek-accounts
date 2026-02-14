@@ -41,7 +41,26 @@ export default function RegisterPage() {
         return;
       }
 
-      // Mock registration - in production, this would call your auth API
+      // Register via API
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          businessName: formData.businessName,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to register");
+      }
+
       alert("Registration successful! Please sign in.");
       router.push("/auth/login");
     } catch (error) {

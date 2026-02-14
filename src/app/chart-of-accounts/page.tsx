@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ExportButton from "@/components/ui/export-button";
 import {
   Plus,
   Search,
@@ -51,6 +52,8 @@ export default function ChartOfAccountsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [isSeeding, setIsSeeding] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -76,6 +79,23 @@ export default function ChartOfAccountsPage() {
     }
   };
 
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "asset":
+        return "Asset";
+      case "liability":
+        return "Liability";
+      case "equity":
+        return "Equity";
+      case "income":
+        return "Income";
+      case "expense":
+        return "Expense";
+      default:
+        return "Unknown";
+    }
+  };
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case "asset":
@@ -93,30 +113,27 @@ export default function ChartOfAccountsPage() {
     }
   };
 
-  const getTypeLabel = (type: string) => {
+  const getBalanceColor = (type: string, balance: number) => {
+    if (balance < 0) {
+      return "text-red-600";
+    }
     switch (type) {
       case "asset":
-        return "Asset";
+        return "text-green-600";
       case "liability":
-        return "Liability";
+        return "text-red-600";
       case "equity":
-        return "Equity";
+        return "text-green-600";
       case "income":
-        return "Income";
+        return "text-green-600";
       case "expense":
-        return "Expense";
+        return "text-red-600";
       default:
-        return type;
+        return "text-gray-600";
     }
   };
 
-  const getBalanceColor = (type: string, balance: number) => {
-    if (type === "expense") return "text-red-600";
-    if (type === "income") return "text-green-600";
-    if (balance < 0) return "text-red-600";
-    return "text-gray-900";
-  };
-
+  // Filter accounts based on search and type
   const filteredAccounts = accounts.filter((account) => {
     const matchesSearch =
       account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -124,6 +141,12 @@ export default function ChartOfAccountsPage() {
     const matchesType = selectedType === "all" || account.type === selectedType;
     return matchesSearch && matchesType;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAccounts = filteredAccounts.slice(startIndex, endIndex);
 
   const accountsByType = {
     asset: accounts.filter((a) => a.type === "asset"),
@@ -170,13 +193,13 @@ export default function ChartOfAccountsPage() {
 
         if (result.success) {
           alert(result.message || "Database seeded successfully!");
-          // Refresh the accounts list
+          // Refresh accounts list
           window.location.reload();
         } else {
           alert(result.error || "Failed to seed database");
         }
       } catch (error) {
-        alert("An error occurred while seeding the database");
+        alert("An error occurred while seeding database");
       } finally {
         setIsSeeding(false);
       }
@@ -227,6 +250,23 @@ export default function ChartOfAccountsPage() {
                     Add Account
                   </Button>
                 </Link>
+              </div>
+
+              {/* Export Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <ExportButton
+                  data={paginatedAccounts.map((account: Account) => ({
+                    "Account Code": account.code,
+                    "Account Name": account.name,
+                    Type: account.type,
+                    Balance: account.balance,
+                    Status: account.isActive ? "Active" : "Inactive",
+                    Description: account.description || "",
+                  }))}
+                  filename="chart-of-accounts"
+                  title="Export Accounts"
+                  className="w-full sm:w-auto"
+                />
               </div>
             </div>
           </div>
@@ -398,7 +438,7 @@ export default function ChartOfAccountsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAccounts.map((account) => (
+                  {paginatedAccounts.map((account) => (
                     <tr key={account.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <p className="font-medium text-gray-900">
@@ -470,6 +510,57 @@ export default function ChartOfAccountsPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                <div className="text-sm text-gray-600">
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(endIndex, filteredAccounts.length)} of{" "}
+                  {filteredAccounts.length} accounts
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={
+                          currentPage === pageNum ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="min-w-[40px]"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

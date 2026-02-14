@@ -1,16 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Mock user database - in production, this would be in a real database
-const users = [
-  {
-    id: "1",
-    email: "admin@jybek.com",
-    password: "admin123", // In production, this would be hashed
-    name: "Admin User",
-    businessId: "demo-business",
-    role: "admin",
-  },
-];
+import clientPromise from "@/lib/db/mongodb";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,8 +12,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const client = await clientPromise;
+    const db = client.db("jybek_accounts");
+
     // Find user by email
-    const user = users.find((u) => u.email === email);
+    const user = await db.collection("users").findOne({ email });
 
     if (!user || user.password !== password) {
       return NextResponse.json(
@@ -36,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Create JWT token (simplified - in production, use a proper JWT library)
     const token = Buffer.from(
       JSON.stringify({
-        userId: user.id,
+        userId: user._id,
         email: user.email,
         businessId: user.businessId,
         role: user.role,
