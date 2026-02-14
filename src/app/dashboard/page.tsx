@@ -208,7 +208,7 @@ export default function DashboardPage() {
 
   const resetFilters = async () => {
     setIsFilterLoading(true);
-    const defaultFilters = {
+    const defaultFilters: FilterOptions = {
       dateRange: "month",
       transactionType: "all",
     };
