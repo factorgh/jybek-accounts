@@ -1,6 +1,1 @@
-{
-  "/dashboard/page": "app/dashboard/page.js",
-  "/reports/page": "app/reports/page.js",
-  "/chart-of-accounts/page": "app/chart-of-accounts/page.js",
-  "/chart-of-accounts/add/page": "app/chart-of-accounts/add/page.js"
-}
+{}
