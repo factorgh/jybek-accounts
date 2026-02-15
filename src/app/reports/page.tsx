@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,10 +15,12 @@ import {
   Filter,
   Activity,
 } from "lucide-react";
+
 import {
   CashFlowReport,
   AgedReceivablesReport,
 } from "@/types/quickbooks-features";
+import { CashFlowReportComponent } from "@/components/reports/CashFlowReport";
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState("cash-flow");
@@ -28,68 +29,45 @@ export default function ReportsPage() {
     useState<AgedReceivablesReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Utility: Currency formatter
+  const formatCurrency = (value?: number) =>
+    `$${(value ?? 0).toLocaleString()}`;
+
   useEffect(() => {
-    // Load data from API
-    // TODO: Implement API calls to fetch real data
+    // TODO: Replace with real API calls
     setCashFlowData(null);
     setAgedReceivablesData(null);
   }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // TODO: Replace with real fetch logic
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
-  const handleExport = (format: "pdf" | "excel" | "csv") => {
-    console.log(`Exporting report as ${format}`);
-    // TODO: Implement actual export functionality
-    // For now, create sample data for export
-    const sampleData = [
-      {
-        "Report Type": "Cash Flow",
-        Period: "Current Month",
-        Amount: "$50,000",
-      },
+  // Build export data safely
+  const agedReceivablesExportData = useMemo(() => {
+    if (!agedReceivablesData) return [];
+
+    return [
       {
         "Report Type": "Aged Receivables",
-        Period: "Q1 2024",
-        Amount: "$25,000",
+        "Total Outstanding": agedReceivablesData.totalOutstanding ?? 0,
+        "Current Amount": agedReceivablesData.currentAmount ?? 0,
+        "Overdue Amount": agedReceivablesData.overdueAmount ?? 0,
       },
-      { "Report Type": "Budget Variance", Period: "2024", Amount: "$5,000" },
+      ...(agedReceivablesData.agingBuckets?.map((bucket) => ({
+        Period: bucket.daysRange,
+        Invoices: bucket.count,
+        Amount: bucket.amount,
+        Percentage: `${bucket.percentage}%`,
+      })) ?? []),
     ];
-
-    // Create CSV content
-    const headers = Object.keys(sampleData[0]);
-    const csvContent = [
-      headers.join(","),
-      ...sampleData.map((row) =>
-        headers
-          .map((header) => {
-            const value = row[header];
-            return typeof value === "string" && value.includes(",")
-              ? `"${value.replace(/"/g, '""')}"`
-              : value;
-          })
-          .join(","),
-      ),
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `financial-report-${new Date().toISOString().split("T")[0]}.csv`,
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  }, [agedReceivablesData]);
 
   const ReportCard = ({
     title,
@@ -100,443 +78,265 @@ export default function ReportsPage() {
   }: {
     title: string;
     description: string;
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     count?: string;
     color: string;
-  }) => (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-      <CardContent className="p-6">
-        <div className="flex items-center space-x-4">
-          <div className={`p-3 rounded-lg ${color}`}>
-            <Icon className="h-6 w-6 text-white" />
+  }) => {
+    return (
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-lg ${color}`}>
+              <Icon className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900">{title}</h3>
+              <p className="text-sm text-gray-600">{description}</p>
+              {count && (
+                <p className="text-xs text-gray-500 mt-1">{count} available</p>
+              )}
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">{title}</h3>
-            <p className="text-sm text-gray-600">{description}</p>
-            {count && (
-              <p className="text-xs text-gray-500 mt-1">
-                {count} reports available
-              </p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8 lg:mb-10">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="space-y-4">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+        <div className="mb-10">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border p-8">
+            <div className="flex flex-col lg:flex-row justify-between gap-6">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
                   Financial Reports
                 </h1>
-                <p className="text-sm sm:text-base text-gray-600 max-w-2xl">
-                  Generate comprehensive financial reports and analyze business
-                  performance
+                <p className="text-gray-600 mt-2">
+                  Generate and analyze business financial performance
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-600">Real-time Data</span>
+
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Real-time Data
               </div>
             </div>
           </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 lg:mb-10">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-xs sm:text-sm">
-                    Total Reports
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold">12</p>
-                </div>
-                <div className="p-2 sm:p-3 bg-blue-400 bg-opacity-30 rounded-lg">
-                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-xs sm:text-sm">
-                    This Month
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold">8</p>
-                </div>
-                <div className="p-2 sm:p-3 bg-green-400 bg-opacity-30 rounded-lg">
-                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-xs sm:text-sm">
-                    Scheduled
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold">3</p>
-                </div>
-                <div className="p-2 sm:p-3 bg-purple-400 bg-opacity-30 rounded-lg">
-                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-100 text-xs sm:text-sm">
-                    Last Generated
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold">2h</p>
-                </div>
-                <div className="p-2 sm:p-3 bg-orange-400 bg-opacity-30 rounded-lg">
-                  <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <StatCard
+            label="Total Reports"
+            value="12"
+            icon={FileText}
+            gradient="from-blue-500 to-blue-600"
+          />
+          <StatCard
+            label="This Month"
+            value="8"
+            icon={TrendingUp}
+            gradient="from-green-500 to-green-600"
+          />
+          <StatCard
+            label="Scheduled"
+            value="3"
+            icon={Calendar}
+            gradient="from-purple-500 to-purple-600"
+          />
+          <StatCard
+            label="Last Generated"
+            value="2h"
+            icon={RefreshCw}
+            gradient="from-orange-500 to-orange-600"
+          />
         </div>
 
-        {/* Report Categories */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Categories */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <ReportCard
             title="Cash Flow Statement"
-            description="IAS 7 compliant cash flow analysis"
+            description="IAS 7 compliant analysis"
             icon={DollarSign}
             count="3 variants"
             color="bg-green-500"
           />
           <ReportCard
             title="Aged Receivables"
-            description="Customer payment aging analysis"
+            description="Customer aging analysis"
             icon={Users}
             count="2 variants"
             color="bg-blue-500"
           />
           <ReportCard
             title="Budget Variance"
-            description="Budget vs actual performance"
+            description="Budget vs actual"
             icon={TrendingUp}
             count="5 variants"
             color="bg-purple-500"
           />
         </div>
 
-        {/* Detailed Reports */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList className="grid w-full grid-cols-4">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-4">
             <TabsTrigger value="cash-flow">Cash Flow</TabsTrigger>
             <TabsTrigger value="aged-receivables">Aged Receivables</TabsTrigger>
             <TabsTrigger value="budget-variance">Budget Variance</TabsTrigger>
-            <TabsTrigger value="custom">Custom Reports</TabsTrigger>
+            <TabsTrigger value="custom">Custom</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="cash-flow" className="space-y-6">
+          {/* Cash Flow */}
+          <TabsContent value="cash-flow">
             {cashFlowData ? (
               <CashFlowReportComponent
                 data={cashFlowData}
                 onRefresh={handleRefresh}
-                onExport={handleExport}
+                onExport={() => {}}
                 isLoading={isLoading}
               />
             ) : (
-              <div className="text-center py-12">
-                <Activity className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No Cash Flow Data Available
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Generate cash flow reports to analyze your business
-                  performance and liquidity
-                </p>
-                <ExportButton
-                  data={[
-                    {
-                      "Report Type": "Cash Flow",
-                      Period: "Current",
-                      Message: "No data available",
-                    },
-                  ]}
-                  filename="cash-flow-report"
-                  title="Generate Cash Flow Report"
-                />
-              </div>
+              <EmptyState
+                icon={Activity}
+                title="No Cash Flow Data"
+                description="Generate reports to analyze liquidity"
+              />
             )}
           </TabsContent>
 
-          <TabsContent value="aged-receivables" className="space-y-6">
+          {/* Aged Receivables */}
+          <TabsContent value="aged-receivables">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex justify-between">
                   Aged Receivables Report
-                  <div className="flex items-center space-x-2">
+                  <div className="flex gap-2">
                     <Button variant="outline" size="sm">
                       <Filter className="h-4 w-4 mr-2" />
                       Filter
                     </Button>
                     <ExportButton
-                      data={
-                        agedReceivablesData
-                          ? [
-                              {
-                                "Report Type": "Aged Receivables",
-                                Period: "Current",
-                                "Total Outstanding":
-                                  agedReceivablesData.totalOutstanding,
-                              },
-                              {
-                                "Report Type": "Aged Receivables",
-                                Period: "Current",
-                                "Current Amount":
-                                  agedReceivablesData.currentAmount,
-                              },
-                              {
-                                "Report Type": "Aged Receivables",
-                                Period: "Current",
-                                "Overdue Amount":
-                                  agedReceivablesData.overdueAmount,
-                              },
-                              ...agedReceivablesData.agingBuckets.map(
-                                (bucket) => ({
-                                  "Report Type": "Aged Receivables",
-                                  Period: bucket.daysRange,
-                                  Invoices: bucket.count,
-                                  Amount: bucket.amount,
-                                  Percentage: bucket.percentage + "%",
-                                }),
-                              ),
-                            ]
-                          : []
-                      }
+                      data={agedReceivablesExportData}
                       filename="aged-receivables-report"
-                      title="Export Aged Receivables Report"
+                      title="Export"
                     />
                   </div>
                 </CardTitle>
               </CardHeader>
+
               <CardContent>
                 {agedReceivablesData ? (
-                  <div className="space-y-6">
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <Card>
-                        <CardContent className="p-6">
-                          <div className="text-center">
-                            <p className="text-gray-600 text-sm">
-                              Total Outstanding
-                            </p>
-                            <p className="text-2xl font-bold text-gray-900">
-                              $
-                              {agedReceivablesData.totalOutstanding.toLocaleString()}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-6">
-                          <div className="text-center">
-                            <p className="text-gray-600 text-sm">Current</p>
-                            <p className="text-2xl font-bold text-green-600">
-                              $
-                              {agedReceivablesData.currentAmount.toLocaleString()}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-6">
-                          <div className="text-center">
-                            <p className="text-gray-600 text-sm">Overdue</p>
-                            <p className="text-2xl font-bold text-red-600">
-                              $
-                              {agedReceivablesData.overdueAmount.toLocaleString()}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Aging Buckets */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Aging Analysis</h3>
-                      {agedReceivablesData.agingBuckets.map((bucket, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className="w-32">
-                              <p className="font-medium">{bucket.daysRange}</p>
-                              <p className="text-sm text-gray-600">
-                                {bucket.count} invoices
-                              </p>
-                            </div>
-                            <div className="flex-1">
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-blue-500 h-2 rounded-full"
-                                  style={{ width: `${bucket.percentage}%` }}
-                                />
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                ${bucket.amount.toLocaleString()}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                {bucket.percentage.toFixed(1)}%
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No Data Available
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Generate an aged receivables report to see customer
-                      payment aging
-                    </p>
-                    <ExportButton
-                      data={
-                        agedReceivablesData
-                          ? [
-                              {
-                                "Report Type": "Aged Receivables",
-                                Period: "Current",
-                                "Total Outstanding":
-                                  agedReceivablesData.totalOutstanding,
-                              },
-                              {
-                                "Report Type": "Aged Receivables",
-                                Period: "Current",
-                                "Current Amount":
-                                  agedReceivablesData.currentAmount,
-                              },
-                              {
-                                "Report Type": "Aged Receivables",
-                                Period: "Current",
-                                "Overdue Amount":
-                                  agedReceivablesData.overdueAmount,
-                              },
-                              ...agedReceivablesData.agingBuckets.map(
-                                (bucket) => ({
-                                  "Report Type": "Aged Receivables",
-                                  Period: bucket.daysRange,
-                                  Invoices: bucket.count,
-                                  Amount: bucket.amount,
-                                  Percentage: bucket.percentage + "%",
-                                }),
-                              ),
-                            ]
-                          : []
-                      }
-                      filename="aged-receivables-report"
-                      title="Export Aged Receivables Report"
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <SummaryCard
+                      label="Total Outstanding"
+                      value={formatCurrency(
+                        agedReceivablesData.totalOutstanding,
+                      )}
+                    />
+                    <SummaryCard
+                      label="Current"
+                      value={formatCurrency(agedReceivablesData.currentAmount)}
+                      color="text-green-600"
+                    />
+                    <SummaryCard
+                      label="Overdue"
+                      value={formatCurrency(agedReceivablesData.overdueAmount)}
+                      color="text-red-600"
                     />
                   </div>
+                ) : (
+                  <EmptyState
+                    icon={Users}
+                    title="No Data Available"
+                    description="Generate an aged receivables report"
+                  />
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="budget-variance" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Budget Variance Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <TrendingUp className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Budget Variance Reports
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Compare budgeted vs actual performance
-                  </p>
-                  <ExportButton
-                    data={[
-                      {
-                        "Report Type": "Budget Variance",
-                        Period: "2024",
-                        Amount: "$5,000",
-                      },
-                      {
-                        "Report Type": "Budget Variance",
-                        Description: "Compare budgeted vs actual performance",
-                      },
-                    ]}
-                    filename="budget-variance-report"
-                    title="Generate Budget Variance Report"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="budget-variance">
+            <EmptyState
+              icon={TrendingUp}
+              title="Budget Variance Reports"
+              description="Compare budget vs actual performance"
+            />
           </TabsContent>
 
-          <TabsContent value="custom" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Custom Reports</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Custom Report Builder
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Create custom reports with your preferred metrics and
-                    layouts
-                  </p>
-                  <ExportButton
-                    data={[
-                      {
-                        "Report Type": "Custom Report",
-                        Period: "2024",
-                        Amount: "$10,000",
-                      },
-                      {
-                        "Report Type": "Custom Report",
-                        Description: "User-defined custom reports",
-                      },
-                    ]}
-                    filename="custom-report"
-                    title="Generate Custom Report"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="custom">
+            <EmptyState
+              icon={FileText}
+              title="Custom Reports"
+              description="Build reports with custom metrics"
+            />
           </TabsContent>
         </Tabs>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Small Reusable Components ---------- */
+
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  gradient,
+}: {
+  label: string;
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+  gradient: string;
+}) {
+  return (
+    <Card className={`bg-gradient-to-r ${gradient} text-white`}>
+      <CardContent className="p-6 flex justify-between items-center">
+        <div>
+          <p className="text-sm opacity-80">{label}</p>
+          <p className="text-2xl font-bold">{value}</p>
+        </div>
+        <Icon className="h-6 w-6" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  color = "text-gray-900",
+}: {
+  label: string;
+  value: string;
+  color?: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-6 text-center">
+        <p className="text-sm text-gray-600">{label}</p>
+        <p className={`text-2xl font-bold ${color}`}>{value}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="text-center py-12">
+      <Icon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+      <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
     </div>
   );
 }
