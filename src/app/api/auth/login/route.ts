@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/db/mongodb";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +19,17 @@ export async function POST(request: NextRequest) {
     // Find user by email
     const user = await db.collection("users").findOne({ email });
 
-    if (!user || user.password !== password) {
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 },
+      );
+    }
+
+    // Compare hashed password using bcrypt
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },
